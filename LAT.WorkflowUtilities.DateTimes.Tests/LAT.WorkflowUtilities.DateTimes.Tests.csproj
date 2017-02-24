@@ -84,6 +84,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AddWeeksTests.cs" />
+    <Compile Include="DateDiffSecondsTests.cs" />
     <Compile Include="DateDiffMinutesTests.cs" />
     <Compile Include="GetDayNumberOfWeekTests.cs" />
     <Compile Include="GetDayNumberTests.cs" />
