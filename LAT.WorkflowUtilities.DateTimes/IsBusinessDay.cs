@@ -34,8 +34,8 @@ namespace LAT.WorkflowUtilities.DateTimes
 
             try
             {
-                DateTime dateToCheck = DateToCheck.Get(executionContext);
-                bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(executionContext);
+                DateTime dateToCheck = this.DateToCheck.Get(executionContext);
+                bool evaluateAsUserLocal = this.EvaluateAsUserLocal.Get(executionContext);
 
                 if (evaluateAsUserLocal)
                 {
@@ -44,41 +44,9 @@ namespace LAT.WorkflowUtilities.DateTimes
                     dateToCheck = glt.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, service);
                 }
 
-                EntityReference holidaySchedule = HolidayClosureCalendar.Get(executionContext);
+                var result = dateToCheck.IsBusinessDay(service, this.HolidayClosureCalendar.Get(executionContext));
 
-                bool validBusinessDay = dateToCheck.DayOfWeek != DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
-
-                if (!validBusinessDay)
-                {
-                    ValidBusinessDay.Set(executionContext, false);
-                    return;
-                }
-
-                if (holidaySchedule != null)
-                {
-                    Entity calendar = service.Retrieve("calendar", holidaySchedule.Id, new ColumnSet(true));
-                    if (calendar == null) return;
-
-                    EntityCollection calendarRules = calendar.GetAttributeValue<EntityCollection>("calendarrules");
-                    foreach (Entity calendarRule in calendarRules.Entities)
-                    {
-                        //Date is not stored as UTC
-                        DateTime startTime = calendarRule.GetAttributeValue<DateTime>("starttime");
-
-                        //Not same date
-                        if (!startTime.Date.Equals(dateToCheck.Date))
-                            continue;
-
-                        //Not full day event
-                        if (startTime.Subtract(startTime.TimeOfDay) != startTime || calendarRule.GetAttributeValue<int>("duration") != 1440)
-                            continue;
-
-                        ValidBusinessDay.Set(executionContext, false);
-                        return;
-                    }
-                }
-
-                ValidBusinessDay.Set(executionContext, true);
+                this.ValidBusinessDay.Set(executionContext, result);
             }
             catch (Exception ex)
             {

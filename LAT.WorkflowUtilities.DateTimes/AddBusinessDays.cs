@@ -6,6 +6,8 @@ using System.Activities;
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
+    using LAT.WorkflowUtilities.DateTimes.Common;
+
     public sealed class AddBusinessDays : CodeActivity
     {
         [RequiredArgument]
@@ -36,15 +38,6 @@ namespace LAT.WorkflowUtilities.DateTimes
                 int businessDaysToAdd = BusinessDaysToAdd.Get(executionContext);
                 EntityReference holidaySchedule = HolidayClosureCalendar.Get(executionContext);
 
-                Entity calendar = null;
-                EntityCollection calendarRules = null;
-                if (holidaySchedule != null)
-                {
-                    calendar = service.Retrieve("calendar", holidaySchedule.Id, new ColumnSet(true));
-                    if (calendar != null)
-                        calendarRules = calendar.GetAttributeValue<EntityCollection>("calendarrules");
-                }
-
                 DateTime tempDate = originalDate;
 
                 if (businessDaysToAdd > 0)
@@ -52,33 +45,12 @@ namespace LAT.WorkflowUtilities.DateTimes
                     while (businessDaysToAdd > 0)
                     {
                         tempDate = tempDate.AddDays(1);
-                        if (tempDate.DayOfWeek == DayOfWeek.Sunday || tempDate.DayOfWeek == DayOfWeek.Saturday)
-                            continue;
 
-                        if (calendar == null)
+                        if (tempDate.IsBusinessDay(service, holidaySchedule))
                         {
+                            // Only decrease the days to add if the day we've just added counts as a business day
                             businessDaysToAdd--;
-                            continue;
                         }
-
-                        bool isHoliday = false;
-                        foreach (Entity calendarRule in calendarRules.Entities)
-                        {
-                            DateTime startTime = calendarRule.GetAttributeValue<DateTime>("starttime");
-
-                            //Not same date
-                            if (!startTime.Date.Equals(tempDate.Date))
-                                continue;
-
-                            //Not full day event
-                            if (startTime.Subtract(startTime.TimeOfDay) != startTime || calendarRule.GetAttributeValue<int>("duration") != 1440)
-                                continue;
-
-                            isHoliday = true;
-                            break;
-                        }
-                        if (!isHoliday)
-                            businessDaysToAdd--;
                     }
                 }
                 else if (businessDaysToAdd < 0)
@@ -86,33 +58,12 @@ namespace LAT.WorkflowUtilities.DateTimes
                     while (businessDaysToAdd < 0)
                     {
                         tempDate = tempDate.AddDays(-1);
-                        if (tempDate.DayOfWeek == DayOfWeek.Sunday || tempDate.DayOfWeek == DayOfWeek.Saturday)
-                            continue;
 
-                        if (calendar == null)
+                        if (tempDate.IsBusinessDay(service, holidaySchedule))
                         {
+                            // Only increase the days to add if the day we've just added counts as a business day
                             businessDaysToAdd++;
-                            continue;
                         }
-
-                        bool isHoliday = false;
-                        foreach (Entity calendarRule in calendarRules.Entities)
-                        {
-                            DateTime startTime = calendarRule.GetAttributeValue<DateTime>("starttime");
-
-                            //Not same date
-                            if (!startTime.Date.Equals(tempDate.Date))
-                                continue;
-
-                            //Not full day event
-                            if (startTime.Subtract(startTime.TimeOfDay) != startTime || calendarRule.GetAttributeValue<int>("duration") != 1440)
-                                continue;
-
-                            isHoliday = true;
-                            break;
-                        }
-                        if (!isHoliday)
-                            businessDaysToAdd++;
                     }
                 }
 

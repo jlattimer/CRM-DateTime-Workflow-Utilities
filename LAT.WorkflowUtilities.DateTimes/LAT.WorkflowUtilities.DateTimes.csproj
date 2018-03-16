@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="AddBusinessDays.cs" />
     <Compile Include="AddWeeks.cs" />
+    <Compile Include="Common\BusinessDayLogic.cs" />
     <Compile Include="Common\GetLocalTime.cs" />
     <Compile Include="DateDiffMinutes.cs" />
     <Compile Include="GetYearNumber.cs" />
