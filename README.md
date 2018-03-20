@@ -1,4 +1,4 @@
-# CRM-DateTime-Workflow-Utilities
+# CRM DateTime Workflow Utilities
 Custom workflow actions that deal with date and time values in Dynamics CRM 2011, 2013, 2015, & 2016
 
 * Add Business Days
@@ -31,7 +31,7 @@ Custom workflow actions that deal with date and time values in Dynamics CRM 2011
 * ToDateTime
 * To UTC String
 
-CRM 2011 & 2013 - Go to [Releases](https://github.com/jlattimer/CRM-DateTime-Workflow-Utilities/releases) and choose the latest 1.x.x.x version from the right hand side.
+Go to [Releases](https://github.com/jlattimer/CRM-DateTime-Workflow-Utilities/releases) and choose the latest 1.x.x.x version for 2011/2013 or the latest 2.x.x.x for 2015/2016.
 
 *No warranty expressed or implied - use at your own risk!
 
