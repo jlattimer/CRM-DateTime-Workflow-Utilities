@@ -1,12 +1,15 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Workflow;
+﻿using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public class IsBetween : CodeActivity
+    public sealed class IsBetween : WorkFlowActivityBase
     {
+        public IsBetween() : base(typeof(IsBetween)) { }
+
         [RequiredArgument]
         [Input("Starting Date")]
         public InArgument<DateTime> StartingDate { get; set; }
@@ -19,27 +22,23 @@ namespace LAT.WorkflowUtilities.DateTimes
         [Input("Ending Date")]
         public InArgument<DateTime> EndingDate { get; set; }
 
-        [OutputAttribute("Between")]
+        [Output("Between")]
         public OutArgument<bool> Between { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
-            {
-                DateTime startingDate = StartingDate.Get(executionContext);
-                DateTime dateToValidate = DateToValidate.Get(executionContext);
-                DateTime endingDate = EndingDate.Get(executionContext);
+            DateTime startingDate = StartingDate.Get(context);
+            DateTime dateToValidate = DateToValidate.Get(context);
+            DateTime endingDate = EndingDate.Get(context);
 
-                var between = dateToValidate > startingDate && dateToValidate < endingDate;
+            var between = dateToValidate > startingDate && dateToValidate < endingDate;
 
-                Between.Set(executionContext, between);
-            }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+            Between.Set(context, between);
         }
     }
 }

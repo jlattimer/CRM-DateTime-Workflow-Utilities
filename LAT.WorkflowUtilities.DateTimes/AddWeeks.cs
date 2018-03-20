@@ -1,12 +1,15 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Workflow;
+﻿using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public sealed class AddWeeks : CodeActivity
+    public sealed class AddWeeks : WorkFlowActivityBase
     {
+        public AddWeeks() : base(typeof(AddWeeks)) { }
+
         [RequiredArgument]
         [Input("Original Date")]
         public InArgument<DateTime> OriginalDate { get; set; }
@@ -15,26 +18,22 @@ namespace LAT.WorkflowUtilities.DateTimes
         [Input("Weeks To Add")]
         public InArgument<int> WeeksToAdd { get; set; }
 
-        [OutputAttribute("Updated Date")]
+        [Output("Updated Date")]
         public OutArgument<DateTime> UpdatedDate { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
-            {
-                DateTime originalDate = OriginalDate.Get(executionContext);
-                int weeksToAdd = WeeksToAdd.Get(executionContext);
+            DateTime originalDate = OriginalDate.Get(context);
+            int weeksToAdd = WeeksToAdd.Get(context);
 
-                DateTime updatedDate = originalDate.AddDays(weeksToAdd * 7);
+            DateTime updatedDate = originalDate.AddDays(weeksToAdd * 7);
 
-                UpdatedDate.Set(executionContext, updatedDate);
-            }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+            UpdatedDate.Set(context, updatedDate);
         }
     }
 }

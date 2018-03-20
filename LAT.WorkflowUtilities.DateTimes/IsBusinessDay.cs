@@ -4,11 +4,15 @@ using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public sealed class IsBusinessDay : CodeActivity
+    public sealed class IsBusinessDay : WorkFlowActivityBase
     {
+        public IsBusinessDay() : base(typeof(IsBusinessDay)) { }
+
         [RequiredArgument]
         [Input("Date To Check")]
         public InArgument<DateTime> DateToCheck { get; set; }
@@ -22,68 +26,61 @@ namespace LAT.WorkflowUtilities.DateTimes
         [Default("True")]
         public InArgument<bool> EvaluateAsUserLocal { get; set; }
 
-        [OutputAttribute("Valid Business Day")]
+        [Output("Valid Business Day")]
         public OutArgument<bool> ValidBusinessDay { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
-            IWorkflowContext context = executionContext.GetExtension<IWorkflowContext>();
-            IOrganizationServiceFactory serviceFactory = executionContext.GetExtension<IOrganizationServiceFactory>();
-            IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
+            DateTime dateToCheck = DateToCheck.Get(context);
+            bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(context);
+
+            if (evaluateAsUserLocal)
             {
-                DateTime dateToCheck = DateToCheck.Get(executionContext);
-                bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(executionContext);
+                GetLocalTime glt = new GetLocalTime();
+                int? timeZoneCode = glt.RetrieveTimeZoneCode(localContext.OrganizationService);
+                dateToCheck = glt.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
+            }
 
-                if (evaluateAsUserLocal)
+            EntityReference holidaySchedule = HolidayClosureCalendar.Get(context);
+
+            bool validBusinessDay = dateToCheck.DayOfWeek != DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
+
+            if (!validBusinessDay)
+            {
+                ValidBusinessDay.Set(context, false);
+                return;
+            }
+
+            if (holidaySchedule != null)
+            {
+                Entity calendar = localContext.OrganizationService.Retrieve("calendar", holidaySchedule.Id, new ColumnSet(true));
+                if (calendar == null) return;
+
+                EntityCollection calendarRules = calendar.GetAttributeValue<EntityCollection>("calendarrules");
+                foreach (Entity calendarRule in calendarRules.Entities)
                 {
-                    GetLocalTime glt = new GetLocalTime();
-                    int? timeZoneCode = glt.RetrieveTimeZoneCode(service);
-                    dateToCheck = glt.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, service);
-                }
+                    //Date is not stored as UTC
+                    DateTime startTime = calendarRule.GetAttributeValue<DateTime>("starttime");
 
-                EntityReference holidaySchedule = HolidayClosureCalendar.Get(executionContext);
+                    //Not same date
+                    if (!startTime.Date.Equals(dateToCheck.Date))
+                        continue;
 
-                bool validBusinessDay = dateToCheck.DayOfWeek != DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
+                    //Not full day event
+                    if (startTime.Subtract(startTime.TimeOfDay) != startTime || calendarRule.GetAttributeValue<int>("duration") != 1440)
+                        continue;
 
-                if (!validBusinessDay)
-                {
-                    ValidBusinessDay.Set(executionContext, false);
+                    ValidBusinessDay.Set(context, false);
                     return;
                 }
-
-                if (holidaySchedule != null)
-                {
-                    Entity calendar = service.Retrieve("calendar", holidaySchedule.Id, new ColumnSet(true));
-                    if (calendar == null) return;
-
-                    EntityCollection calendarRules = calendar.GetAttributeValue<EntityCollection>("calendarrules");
-                    foreach (Entity calendarRule in calendarRules.Entities)
-                    {
-                        //Date is not stored as UTC
-                        DateTime startTime = calendarRule.GetAttributeValue<DateTime>("starttime");
-
-                        //Not same date
-                        if (!startTime.Date.Equals(dateToCheck.Date))
-                            continue;
-
-                        //Not full day event
-                        if (startTime.Subtract(startTime.TimeOfDay) != startTime || calendarRule.GetAttributeValue<int>("duration") != 1440)
-                            continue;
-
-                        ValidBusinessDay.Set(executionContext, false);
-                        return;
-                    }
-                }
-
-                ValidBusinessDay.Set(executionContext, true);
             }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+
+            ValidBusinessDay.Set(context, true);
         }
     }
 }

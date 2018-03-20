@@ -1,13 +1,16 @@
 ﻿using LAT.WorkflowUtilities.DateTimes.Common;
-using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public class IsSameDay : CodeActivity
+    public sealed class IsSameDay : WorkFlowActivityBase
     {
+        public IsSameDay() : base(typeof(IsSameDay)) { }
+
         [RequiredArgument]
         [Input("First Date")]
         public InArgument<DateTime> FirstDate { get; set; }
@@ -21,38 +24,31 @@ namespace LAT.WorkflowUtilities.DateTimes
         [Default("True")]
         public InArgument<bool> EvaluateAsUserLocal { get; set; }
 
-        [OutputAttribute("Same Day")]
+        [Output("Same Day")]
         public OutArgument<bool> SameDay { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
-            IWorkflowContext context = executionContext.GetExtension<IWorkflowContext>();
-            IOrganizationServiceFactory serviceFactory = executionContext.GetExtension<IOrganizationServiceFactory>();
-            IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
-           
-            try
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
+
+            DateTime firstDate = FirstDate.Get(context);
+            DateTime secondDate = SecondDate.Get(context);
+            bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(context);
+
+            if (evaluateAsUserLocal)
             {
-                DateTime firstDate = FirstDate.Get(executionContext);
-                DateTime secondDate = SecondDate.Get(executionContext);
-                bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(executionContext);
-
-                if (evaluateAsUserLocal)
-                {
-                    GetLocalTime glt = new GetLocalTime();
-                    int? timeZoneCode = glt.RetrieveTimeZoneCode(service);
-                    firstDate = glt.RetrieveLocalTimeFromUtcTime(firstDate, timeZoneCode, service);
-                    secondDate = glt.RetrieveLocalTimeFromUtcTime(secondDate, timeZoneCode, service);
-                }
-
-                bool sameDay = firstDate.Date == secondDate.Date;
-
-                SameDay.Set(executionContext, sameDay);
+                GetLocalTime glt = new GetLocalTime();
+                int? timeZoneCode = glt.RetrieveTimeZoneCode(localContext.OrganizationService);
+                firstDate = glt.RetrieveLocalTimeFromUtcTime(firstDate, timeZoneCode, localContext.OrganizationService);
+                secondDate = glt.RetrieveLocalTimeFromUtcTime(secondDate, timeZoneCode, localContext.OrganizationService);
             }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+
+            bool sameDay = firstDate.Date == secondDate.Date;
+
+            SameDay.Set(context, sameDay);
         }
     }
 }

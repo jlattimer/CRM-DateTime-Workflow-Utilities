@@ -108,6 +108,7 @@
     <Compile Include="RelativeTime.cs" />
     <Compile Include="ToDateTime.cs" />
     <Compile Include="ToUTCString.cs" />
+    <Compile Include="WorkFlowActivityBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="LATKey.snk" />

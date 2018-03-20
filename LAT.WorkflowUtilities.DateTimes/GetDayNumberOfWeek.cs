@@ -1,13 +1,16 @@
 ﻿using LAT.WorkflowUtilities.DateTimes.Common;
-using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public class GetDayNumberOfWeek : CodeActivity
+    public sealed class GetDayNumberOfWeek : WorkFlowActivityBase
     {
+        public GetDayNumberOfWeek() : base(typeof(GetDayNumberOfWeek)) { }
+
         [RequiredArgument]
         [Input("Date To Use")]
         public InArgument<DateTime> DateToUse { get; set; }
@@ -17,36 +20,29 @@ namespace LAT.WorkflowUtilities.DateTimes
         [Default("True")]
         public InArgument<bool> EvaluateAsUserLocal { get; set; }
 
-        [OutputAttribute("Day Number Of Week")]
+        [Output("Day Number Of Week")]
         public OutArgument<int> DayNumberOfWeek { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
-            IWorkflowContext context = executionContext.GetExtension<IWorkflowContext>();
-            IOrganizationServiceFactory serviceFactory = executionContext.GetExtension<IOrganizationServiceFactory>();
-            IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
+            DateTime dateToUse = DateToUse.Get(context);
+            bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(context);
+
+            if (evaluateAsUserLocal)
             {
-                DateTime dateToUse = DateToUse.Get(executionContext);
-                bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(executionContext);
-
-                if (evaluateAsUserLocal)
-                {
-                    GetLocalTime glt = new GetLocalTime();
-                    int? timeZoneCode = glt.RetrieveTimeZoneCode(service);
-                    dateToUse = glt.RetrieveLocalTimeFromUtcTime(dateToUse, timeZoneCode, service);
-                }
-
-                int dayNumberOfWeek = ((int)dateToUse.DayOfWeek + 1);
-
-                DayNumberOfWeek.Set(executionContext, dayNumberOfWeek);
+                GetLocalTime glt = new GetLocalTime();
+                int? timeZoneCode = glt.RetrieveTimeZoneCode(localContext.OrganizationService);
+                dateToUse = glt.RetrieveLocalTimeFromUtcTime(dateToUse, timeZoneCode, localContext.OrganizationService);
             }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+
+            int dayNumberOfWeek = (int)dateToUse.DayOfWeek + 1;
+
+            DayNumberOfWeek.Set(context, dayNumberOfWeek);
         }
     }
 }

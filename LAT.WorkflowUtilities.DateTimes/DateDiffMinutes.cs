@@ -1,12 +1,15 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Workflow;
+﻿using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public sealed class DateDiffMinutes : CodeActivity
+    public sealed class DateDiffMinutes : WorkFlowActivityBase
     {
+        public DateDiffMinutes() : base(typeof(DateDiffMinutes)) { }
+
         [RequiredArgument]
         [Input("Starting Date")]
         public InArgument<DateTime> StartingDate { get; set; }
@@ -15,34 +18,30 @@ namespace LAT.WorkflowUtilities.DateTimes
         [Input("Ending Date")]
         public InArgument<DateTime> EndingDate { get; set; }
 
-        [OutputAttribute("Minutes Difference")]
+        [Output("Minutes Difference")]
         public OutArgument<int> MinutesDifference { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
-            {
-                DateTime startingDate = StartingDate.Get(executionContext);
-                DateTime endingDate = EndingDate.Get(executionContext);
+            DateTime startingDate = StartingDate.Get(context);
+            DateTime endingDate = EndingDate.Get(context);
 
-                startingDate = new DateTime(startingDate.Year, startingDate.Month, startingDate.Day, startingDate.Hour,
-                    startingDate.Minute, 0, startingDate.Kind);
+            startingDate = new DateTime(startingDate.Year, startingDate.Month, startingDate.Day, startingDate.Hour,
+                startingDate.Minute, 0, startingDate.Kind);
 
-                endingDate = new DateTime(endingDate.Year, endingDate.Month, endingDate.Day, endingDate.Hour,
-                    endingDate.Minute, 0, endingDate.Kind);
+            endingDate = new DateTime(endingDate.Year, endingDate.Month, endingDate.Day, endingDate.Hour,
+                endingDate.Minute, 0, endingDate.Kind);
 
-                TimeSpan difference = startingDate - endingDate;
+            TimeSpan difference = startingDate - endingDate;
 
-                int minutesDifference = Math.Abs(Convert.ToInt32(difference.TotalMinutes));
+            int minutesDifference = Math.Abs(Convert.ToInt32(difference.TotalMinutes));
 
-                MinutesDifference.Set(executionContext, minutesDifference);
-            }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+            MinutesDifference.Set(context, minutesDifference);
         }
     }
 }
