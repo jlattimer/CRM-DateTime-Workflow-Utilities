@@ -40,10 +40,9 @@ namespace LAT.WorkflowUtilities.DateTimes
 
             if (evaluateAsUserLocal)
             {
-                GetLocalTime glt = new GetLocalTime();
-                int? timeZoneCode = glt.RetrieveTimeZoneCode(localContext.OrganizationService);
-                firstDate = glt.RetrieveLocalTimeFromUtcTime(firstDate, timeZoneCode, localContext.OrganizationService);
-                secondDate = glt.RetrieveLocalTimeFromUtcTime(secondDate, timeZoneCode, localContext.OrganizationService);
+                int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
+                firstDate = GetLocalTime.RetrieveLocalTimeFromUtcTime(firstDate, timeZoneCode, localContext.OrganizationService);
+                secondDate = GetLocalTime.RetrieveLocalTimeFromUtcTime(secondDate, timeZoneCode, localContext.OrganizationService);
             }
 
             bool sameDay = firstDate.Date == secondDate.Date;

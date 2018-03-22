@@ -41,9 +41,8 @@ namespace LAT.WorkflowUtilities.DateTimes
 
             if (evaluateAsUserLocal)
             {
-                GetLocalTime glt = new GetLocalTime();
-                int? timeZoneCode = glt.RetrieveTimeZoneCode(localContext.OrganizationService);
-                dateToCheck = glt.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
+                int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
+                dateToCheck = GetLocalTime.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
             }
 
             EntityReference holidaySchedule = HolidayClosureCalendar.Get(context);

@@ -38,9 +38,8 @@ namespace LAT.WorkflowUtilities.DateTimes
 
             if (evaluateAsUserLocal)
             {
-                GetLocalTime glt = new GetLocalTime();
-                int? timeZoneCode = glt.RetrieveTimeZoneCode(localContext.OrganizationService);
-                dateToUse = glt.RetrieveLocalTimeFromUtcTime(dateToUse, timeZoneCode, localContext.OrganizationService);
+                int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
+                dateToUse = GetLocalTime.RetrieveLocalTimeFromUtcTime(dateToUse, timeZoneCode, localContext.OrganizationService);
             }
 
             int quarterNumber = (dateToUse.Month - 1) / 3 + 1;
