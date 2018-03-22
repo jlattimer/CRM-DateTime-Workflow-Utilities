@@ -1,9 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Workflow;
-using Moq;
+﻿using FakeXrmEasy;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Activities;
 using System.Collections.Generic;
 
 namespace LAT.WorkflowUtilities.DateTimes.Tests
@@ -11,16 +8,6 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
     [TestClass]
     public class DateDiffMonthsTests
     {
-        #region Class Constructor
-        private readonly string _namespaceClassAssembly;
-        public DateDiffMonthsTests()
-        {
-            //[Namespace.class name, assembly name] for the class/assembly being tested
-            //Namespace and class name can be found on the class file being tested
-            //Assembly name can be found under the project properties on the Application tab
-            _namespaceClassAssembly = "LAT.WorkflowUtilities.DateTimes.DateDiffMonths" + ", " + "LAT.WorkflowUtilities.DateTimes";
-        }
-        #endregion
         #region Test Initialization and Cleanup
         // Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize()]
@@ -40,243 +27,187 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
         #endregion
 
         [TestMethod]
-        public void MinusOneMonth()
+        public void DateDiffMonths_Minus_One_Month()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 6, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 1;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMonths>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MonthsDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MonthsDifference"]);
         }
 
         [TestMethod]
-        public void MinusFiveMonths()
+        public void DateDiffMonths_Minus_Five_Months()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 2, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 5;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMonths>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MonthsDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MonthsDifference"]);
         }
 
         [TestMethod]
-        public void MinusTwentyFiveMonths()
+        public void DateDiffMonths_Minus_Twenty_Five_Months()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2012, 6, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 25;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMonths>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MonthsDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MonthsDifference"]);
         }
 
         [TestMethod]
-        public void OneMonth()
+        public void DateDiffMonths_Add_One_Month()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 8, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 1;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMonths>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MonthsDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MonthsDifference"]);
         }
 
         [TestMethod]
-        public void FiveMonths()
+        public void DateDiffMonths_Add_Five_Months()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 12, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 5;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMonths>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MonthsDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MonthsDifference"]);
         }
 
         [TestMethod]
-        public void TwentyFiveMonths()
+        public void DateDiffMonths_Twenty_Five_Months()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2016, 8, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 25;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMonths>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MonthsDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MonthsDifference"]);
         }
 
         [TestMethod]
-        public void Same()
+        public void DateDiffMonths_Same_Day()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 0;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMonths>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MonthsDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MonthsDifference"]);
         }
 
         [TestMethod]
-        public void MinusElevenMonths()
+        public void DateDiffMonths_Minus_Eleven_Months()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2013, 10, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 9;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMonths>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MonthsDifference"]);
-        }
-
-        /// <summary>
-        /// Invokes the workflow.
-        /// </summary>
-        /// <param name="name">Namespace.Class, Assembly</param>
-        /// <param name="target">The target entity</param>
-        /// <param name="inputs">The workflow input parameters</param>
-        /// <param name="configuredServiceMock">The function to configure the Organization Service</param>
-        /// <returns>The workflow output parameters</returns>
-        private static IDictionary<string, object> InvokeWorkflow(string name, ref Entity target, Dictionary<string, object> inputs,
-            Func<Mock<IOrganizationService>, Mock<IOrganizationService>> configuredServiceMock)
-        {
-            var testClass = Activator.CreateInstance(Type.GetType(name)) as CodeActivity; ;
-
-            var serviceMock = new Mock<IOrganizationService>();
-            var factoryMock = new Mock<IOrganizationServiceFactory>();
-            var tracingServiceMock = new Mock<ITracingService>();
-            var workflowContextMock = new Mock<IWorkflowContext>();
-
-            //Apply configured Organization Service Mock
-            if (configuredServiceMock != null)
-                serviceMock = configuredServiceMock(serviceMock);
-
-            IOrganizationService service = serviceMock.Object;
-
-            //Mock workflow Context
-            var workflowUserId = Guid.NewGuid();
-            var workflowCorrelationId = Guid.NewGuid();
-            var workflowInitiatingUserId = Guid.NewGuid();
-
-            //Workflow Context Mock
-            workflowContextMock.Setup(t => t.InitiatingUserId).Returns(workflowInitiatingUserId);
-            workflowContextMock.Setup(t => t.CorrelationId).Returns(workflowCorrelationId);
-            workflowContextMock.Setup(t => t.UserId).Returns(workflowUserId);
-            var workflowContext = workflowContextMock.Object;
-
-            //Organization Service Factory Mock
-            factoryMock.Setup(t => t.CreateOrganizationService(It.IsAny<Guid>())).Returns(service);
-            var factory = factoryMock.Object;
-
-            //Tracing Service - Content written appears in output
-            tracingServiceMock.Setup(t => t.Trace(It.IsAny<string>(), It.IsAny<object[]>())).Callback<string, object[]>(MoqExtensions.WriteTrace);
-            var tracingService = tracingServiceMock.Object;
-
-            //Parameter Collection
-            ParameterCollection inputParameters = new ParameterCollection { { "Target", target } };
-            workflowContextMock.Setup(t => t.InputParameters).Returns(inputParameters);
-
-            //Workflow Invoker
-            var invoker = new WorkflowInvoker(testClass);
-            invoker.Extensions.Add(() => tracingService);
-            invoker.Extensions.Add(() => workflowContext);
-            invoker.Extensions.Add(() => factory);
-
-            return invoker.Invoke(inputs);
+            //Assert
+            Assert.AreEqual(expected, result["MonthsDifference"]);
         }
     }
 }

@@ -1,10 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FakeXrmEasy;
+using FakeXrmEasy.FakeMessageExecutors;
+using Microsoft.Crm.Sdk.Messages;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Query;
-using Microsoft.Xrm.Sdk.Workflow;
-using Moq;
 using System;
-using System.Activities;
 using System.Collections.Generic;
 
 namespace LAT.WorkflowUtilities.DateTimes.Tests
@@ -12,16 +11,6 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
     [TestClass]
     public class GetWeekStartEndTests
     {
-        #region Class Constructor
-        private readonly string _namespaceClassAssembly;
-        public GetWeekStartEndTests()
-        {
-            //[Namespace.class name, assembly name] for the class/assembly being tested
-            //Namespace and class name can be found on the class file being tested
-            //Assembly name can be found under the project properties on the Application tab
-            _namespaceClassAssembly = "LAT.WorkflowUtilities.DateTimes.GetWeekStartEnd" + ", " + "LAT.WorkflowUtilities.DateTimes";
-        }
-        #endregion
         #region Test Initialization and Cleanup
         // Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize()]
@@ -41,213 +30,158 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
         #endregion
 
         [TestMethod]
-        public void ValidDate1UserLocal()
+        public void GetWeekStartEnd_Valid_Date1_User_Local()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
+            EntityCollection userSettings = new EntityCollection();
+            Entity userSetting = new Entity("usersettings")
+            {
+                Id = Guid.NewGuid(),
+                ["systemuserid"] = Guid.NewGuid(),
+                ["timezonecode"] = 20
+            };
+            userSettings.Entities.Add(userSetting);
+
             var inputs = new Dictionary<string, object>
             {
                 { "DateToUse", new DateTime(2015, 1, 1, 5, 0, 0, DateTimeKind.Utc) },
-                { "EvaluateAsUserLocal", true } 
+                { "EvaluateAsUserLocal", true }
             };
 
-            //Expected value(s)
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+            xrmFakedContext.Initialize(new List<Entity> { userSetting });
+            xrmFakedContext.CallerId = new EntityReference("systemuser", userSetting.GetAttributeValue<Guid>("systemuserid"));
+            var fakeLocalTimeFromUtcTimeRequestExecutor = new FakeLocalTimeFromUtcTimeRequestExecutor(new DateTime(2014, 12, 31, 23, 0, 0));
+            xrmFakedContext.AddFakeMessageExecutor<LocalTimeFromUtcTimeRequest>(fakeLocalTimeFromUtcTimeRequestExecutor);
+
             DateTime expected1 = new DateTime(2014, 12, 28, 0, 0, 0);
             DateTime expected2 = new DateTime(2015, 1, 3, 23, 59, 59, 999);
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, ValidDate1UserLocalSetup);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<GetWeekStartEnd>(workflowContext, inputs);
 
-            //Test(s)
-            Assert.AreEqual(expected1, output["WeekStartDate"]);
-            Assert.AreEqual(expected2, output["WeekEndDate"]);
-        }
-
-        /// <summary>
-        /// Modify to mock CRM Organization Service actions
-        /// </summary>
-        /// <param name="serviceMock">The Organization Service to mock</param>
-        /// <returns>Configured Organization Service</returns>
-        private static Mock<IOrganizationService> ValidDate1UserLocalSetup(Mock<IOrganizationService> serviceMock)
-        {
-            EntityCollection userSettings = new EntityCollection();
-            Entity userSetting = new Entity("usersettings");
-            userSetting["timezonecode"] = 20;
-            userSettings.Entities.Add(userSetting);
-
-            serviceMock.Setup(t =>
-                t.RetrieveMultiple(It.IsAny<QueryExpression>()))
-                .ReturnsInOrder(userSettings);
-
-            OrganizationResponse localTime = new OrganizationResponse();
-            ParameterCollection results = new ParameterCollection { { "LocalTime", new DateTime(2014, 12, 31, 23, 0, 0) } };
-            localTime.Results = results;
-
-            serviceMock.Setup(t =>
-                t.Execute(It.IsAny<OrganizationRequest>()))
-                .ReturnsInOrder(localTime);
-
-            return serviceMock;
+            //Assert
+            Assert.AreEqual(expected1, result["WeekStartDate"]);
+            Assert.AreEqual(expected2, result["WeekEndDate"]);
         }
 
         [TestMethod]
-        public void ValidDate2UserLocal()
+        public void GetWeekStartEnd_Valid_Date2_User_Local()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
+            EntityCollection userSettings = new EntityCollection();
+            Entity userSetting = new Entity("usersettings")
+            {
+                Id = Guid.NewGuid(),
+                ["systemuserid"] = Guid.NewGuid(),
+                ["timezonecode"] = 20
+            };
+            userSettings.Entities.Add(userSetting);
+
             var inputs = new Dictionary<string, object>
             {
                 { "DateToUse", new DateTime(2015, 5, 2, 23, 0, 0, DateTimeKind.Utc) },
-                { "EvaluateAsUserLocal", true } 
+                { "EvaluateAsUserLocal", true }
             };
 
-            //Expected value(s)
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+            xrmFakedContext.Initialize(new List<Entity> { userSetting });
+            xrmFakedContext.CallerId = new EntityReference("systemuser", userSetting.GetAttributeValue<Guid>("systemuserid"));
+            var fakeLocalTimeFromUtcTimeRequestExecutor = new FakeLocalTimeFromUtcTimeRequestExecutor(new DateTime(2015, 5, 3, 11, 0, 0));
+            xrmFakedContext.AddFakeMessageExecutor<LocalTimeFromUtcTimeRequest>(fakeLocalTimeFromUtcTimeRequestExecutor);
+
             DateTime expected1 = new DateTime(2015, 5, 3, 0, 0, 0);
             DateTime expected2 = new DateTime(2015, 5, 9, 23, 59, 59, 999);
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, ValidDate2UserLocalSetup);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<GetWeekStartEnd>(workflowContext, inputs);
 
-            //Test(s)
-            Assert.AreEqual(expected1, output["WeekStartDate"]);
-            Assert.AreEqual(expected2, output["WeekEndDate"]);
-        }
-
-        /// <summary>
-        /// Modify to mock CRM Organization Service actions
-        /// </summary>
-        /// <param name="serviceMock">The Organization Service to mock</param>
-        /// <returns>Configured Organization Service</returns>
-        private static Mock<IOrganizationService> ValidDate2UserLocalSetup(Mock<IOrganizationService> serviceMock)
-        {
-            EntityCollection userSettings = new EntityCollection();
-            Entity userSetting = new Entity("usersettings");
-            userSetting["timezonecode"] = 20;
-            userSettings.Entities.Add(userSetting);
-
-            serviceMock.Setup(t =>
-                t.RetrieveMultiple(It.IsAny<QueryExpression>()))
-                .ReturnsInOrder(userSettings);
-
-            OrganizationResponse localTime = new OrganizationResponse();
-            ParameterCollection results = new ParameterCollection { { "LocalTime", new DateTime(2015, 5, 3, 11, 0, 0) } };
-            localTime.Results = results;
-
-            serviceMock.Setup(t =>
-                t.Execute(It.IsAny<OrganizationRequest>()))
-                .ReturnsInOrder(localTime);
-
-            return serviceMock;
+            //Assert
+            Assert.AreEqual(expected1, result["WeekStartDate"]);
+            Assert.AreEqual(expected2, result["WeekEndDate"]);
         }
 
         [TestMethod]
-        public void ValidDate1Utc()
+        public void GetWeekStartEnd__Valid_Date1_Utc()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
             var inputs = new Dictionary<string, object>
             {
                 { "DateToUse", new DateTime(2015, 1, 1, 5, 0, 0, DateTimeKind.Utc) },
-                { "EvaluateAsUserLocal", false } 
+                { "EvaluateAsUserLocal", false }
             };
 
-            //Expected value(s)
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             DateTime expected1 = new DateTime(2014, 12, 28, 0, 0, 0);
             DateTime expected2 = new DateTime(2015, 1, 3, 23, 59, 59, 999);
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<GetWeekStartEnd>(workflowContext, inputs);
 
-            //Test(s)
-            Assert.AreEqual(expected1, output["WeekStartDate"]);
-            Assert.AreEqual(expected2, output["WeekEndDate"]);
+            //Assert
+            Assert.AreEqual(expected1, result["WeekStartDate"]);
+            Assert.AreEqual(expected2, result["WeekEndDate"]);
         }
 
         [TestMethod]
-        public void ValidDate2Utc()
+        public void GetWeekStartEnd__Valid_Date2_Utc()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
             var inputs = new Dictionary<string, object>
             {
                 { "DateToUse", new DateTime(2015, 5, 2, 23, 0, 0, DateTimeKind.Utc) },
-                { "EvaluateAsUserLocal", false } 
+                { "EvaluateAsUserLocal", false }
             };
 
-            //Expected value(s)
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             DateTime expected1 = new DateTime(2015, 4, 26, 0, 0, 0);
             DateTime expected2 = new DateTime(2015, 5, 2, 23, 59, 59, 999);
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<GetWeekStartEnd>(workflowContext, inputs);
 
-            //Test(s)
-            Assert.AreEqual(expected1, output["WeekStartDate"]);
-            Assert.AreEqual(expected2, output["WeekEndDate"]);
+            //Assert
+            Assert.AreEqual(expected1, result["WeekStartDate"]);
+            Assert.AreEqual(expected2, result["WeekEndDate"]);
         }
 
-        /// <summary>
-        /// Invokes the workflow.
-        /// </summary>
-        /// <param name="name">Namespace.Class, Assembly</param>
-        /// <param name="target">The target entity</param>
-        /// <param name="inputs">The workflow input parameters</param>
-        /// <param name="configuredServiceMock">The function to configure the Organization Service</param>
-        /// <returns>The workflow output parameters</returns>
-        private static IDictionary<string, object> InvokeWorkflow(string name, ref Entity target, Dictionary<string, object> inputs,
-            Func<Mock<IOrganizationService>, Mock<IOrganizationService>> configuredServiceMock)
+        private class FakeLocalTimeFromUtcTimeRequestExecutor : IFakeMessageExecutor
         {
-            var testClass = Activator.CreateInstance(Type.GetType(name)) as CodeActivity; ;
+            private readonly DateTime _date;
 
-            var serviceMock = new Mock<IOrganizationService>();
-            var factoryMock = new Mock<IOrganizationServiceFactory>();
-            var tracingServiceMock = new Mock<ITracingService>();
-            var workflowContextMock = new Mock<IWorkflowContext>();
+            public FakeLocalTimeFromUtcTimeRequestExecutor(DateTime date)
+            {
+                _date = date;
+            }
 
-            //Apply configured Organization Service Mock
-            if (configuredServiceMock != null)
-                serviceMock = configuredServiceMock(serviceMock);
+            public bool CanExecute(OrganizationRequest request)
+            {
+                return request is LocalTimeFromUtcTimeRequest;
+            }
 
-            IOrganizationService service = serviceMock.Object;
+            public Type GetResponsibleRequestType()
+            {
+                return typeof(LocalTimeFromUtcTimeRequest);
+            }
 
-            //Mock workflow Context
-            var workflowUserId = Guid.NewGuid();
-            var workflowCorrelationId = Guid.NewGuid();
-            var workflowInitiatingUserId = Guid.NewGuid();
+            public OrganizationResponse Execute(OrganizationRequest request, XrmFakedContext ctx)
+            {
+                OrganizationResponse localTime = new OrganizationResponse();
+                ParameterCollection results = new ParameterCollection { { "LocalTime", _date } };
+                localTime.Results = results;
 
-            //Workflow Context Mock
-            workflowContextMock.Setup(t => t.InitiatingUserId).Returns(workflowInitiatingUserId);
-            workflowContextMock.Setup(t => t.CorrelationId).Returns(workflowCorrelationId);
-            workflowContextMock.Setup(t => t.UserId).Returns(workflowUserId);
-            var workflowContext = workflowContextMock.Object;
-
-            //Organization Service Factory Mock
-            factoryMock.Setup(t => t.CreateOrganizationService(It.IsAny<Guid>())).Returns(service);
-            var factory = factoryMock.Object;
-
-            //Tracing Service - Content written appears in output
-            tracingServiceMock.Setup(t => t.Trace(It.IsAny<string>(), It.IsAny<object[]>())).Callback<string, object[]>(MoqExtensions.WriteTrace);
-            var tracingService = tracingServiceMock.Object;
-
-            //Parameter Collection
-            ParameterCollection inputParameters = new ParameterCollection { { "Target", target } };
-            workflowContextMock.Setup(t => t.InputParameters).Returns(inputParameters);
-
-            //Workflow Invoker
-            var invoker = new WorkflowInvoker(testClass);
-            invoker.Extensions.Add(() => tracingService);
-            invoker.Extensions.Add(() => workflowContext);
-            invoker.Extensions.Add(() => factory);
-
-            return invoker.Invoke(inputs);
+                return localTime;
+            }
         }
     }
 }
