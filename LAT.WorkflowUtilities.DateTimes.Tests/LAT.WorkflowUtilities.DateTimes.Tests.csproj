@@ -91,6 +91,7 @@
     <Compile Include="DateDiffSecondsTests.cs" />
     <Compile Include="DateDiffMinutesTests.cs" />
     <Compile Include="GetDayNumberOfWeekTests.cs" />
+    <Compile Include="GetMonthNameTests.cs" />
     <Compile Include="GetSecondNumberTests.cs" />
     <Compile Include="GetMinuteNumberTests.cs" />
     <Compile Include="GetHourNumberTests.cs" />

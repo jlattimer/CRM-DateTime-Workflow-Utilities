@@ -75,6 +75,7 @@
     <Compile Include="Common\GetLocalTime.cs" />
     <Compile Include="DateDiffSeconds.cs" />
     <Compile Include="DateDiffMinutes.cs" />
+    <Compile Include="GetMonthName.cs" />
     <Compile Include="GetSecondNumber.cs" />
     <Compile Include="GetMinuteNumber.cs" />
     <Compile Include="GetHourNumber.cs" />
