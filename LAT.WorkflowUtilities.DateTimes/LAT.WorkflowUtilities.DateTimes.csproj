@@ -110,6 +110,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="RelativeTime.cs" />
+    <Compile Include="SetTime.cs" />
     <Compile Include="ToDateTime.cs" />
     <Compile Include="ToUTCString.cs" />
     <Compile Include="WorkFlowActivityBase.cs" />
