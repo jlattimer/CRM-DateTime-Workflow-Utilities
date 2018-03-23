@@ -16,17 +16,17 @@ namespace LAT.WorkflowUtilities.DateTimes
         public InArgument<DateTime> DateToUpdate { get; set; }
 
         [RequiredArgument]
-        [Output("Hour (24-hour)")]
+        [Input("Hour (24-hour)")]
         [Default("12")]
         public InArgument<int> Hour { get; set; }
 
         [RequiredArgument]
-        [Output("Minute")]
+        [Input("Minute")]
         [Default("0")]
         public InArgument<int> Minute { get; set; }
 
         [RequiredArgument]
-        [Output("Second")]
+        [Input("Second")]
         [Default("0")]
         public InArgument<int> Second { get; set; }
 
