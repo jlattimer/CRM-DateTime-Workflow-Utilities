@@ -212,6 +212,30 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
             Assert.AreEqual(expected, result["FormattedDateString"]);
         }
 
+        [TestMethod]
+        public void GetFormattedDateString_Invalid_Format()
+        {
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
+
+            var inputs = new Dictionary<string, object>
+            {
+                { "DateToUse", new DateTime(2015, 1, 1, 5, 15, 20, DateTimeKind.Utc) },
+                { "EvaluateAsUserLocal", false },
+                { "Format", "rreepp" }
+            };
+
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
+            const string expected = "rreepp";
+
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<GetFormattedDateString>(workflowContext, inputs);
+
+            //Assert
+            Assert.AreEqual(expected, result["FormattedDateString"]);
+        }
+
         private class FakeLocalTimeFromUtcTimeRequestExecutor : IFakeMessageExecutor
         {
             public bool CanExecute(OrganizationRequest request)
