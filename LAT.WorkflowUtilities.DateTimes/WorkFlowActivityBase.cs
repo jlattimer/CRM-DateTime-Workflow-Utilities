@@ -206,7 +206,7 @@ namespace LAT.WorkflowUtilities.DateTimes
                             sb.Append(propertyValue.ToString());
                             break;
                         case DateTime _:
-                            sb.Append(((DateTime)propertyValue).ToString("yyyy-MM-dd HH:mm:ss \"GMT\"zzz"));
+                            sb.Append(((DateTime)propertyValue).ToString("yyyy-MM-dd HH:mm:ss \"GMT\"Z"));
                             break;
                         case EntityReference _:
                             var er = (EntityReference)propertyValue;
