@@ -96,6 +96,7 @@
     <Compile Include="GetMinuteNumberTests.cs" />
     <Compile Include="GetHourNumberTests.cs" />
     <Compile Include="GetDayNumberTests.cs" />
+    <Compile Include="GetFormattedDateStringTests.cs" />
     <Compile Include="GetYearNumberTests.cs" />
     <Compile Include="GetMonthNumberTests.cs" />
     <Compile Include="GetDayNumberOfYearTests.cs" />
