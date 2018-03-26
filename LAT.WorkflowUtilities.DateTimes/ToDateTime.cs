@@ -1,40 +1,38 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Workflow;
+﻿using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public class ToDateTime : CodeActivity
+    public sealed class ToDateTime : WorkFlowActivityBase
     {
+        public ToDateTime() : base(typeof(ToDateTime)) { }
+
         [RequiredArgument]
         [Input("Text To Convert")]
         public InArgument<string> TextToConvert { get; set; }
 
-        [OutputAttribute("Converted Date")]
+        [Output("Converted Date")]
         public OutArgument<DateTime> ConvertedDate { get; set; }
 
-        [OutputAttribute("Is Valid Date")]
+        [Output("Is Valid Date")]
         public OutArgument<bool> IsValid { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
-            {
-                string textToConvert = TextToConvert.Get(executionContext);
+            string textToConvert = TextToConvert.Get(context);
 
-                DateTime convertedDate;
-                bool isValid = DateTime.TryParse(textToConvert, out convertedDate);
+            bool isValid = DateTime.TryParse(textToConvert, out var convertedDate);
 
-                ConvertedDate.Set(executionContext, convertedDate);
-                IsValid.Set(executionContext, isValid);
-            }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+            ConvertedDate.Set(context, convertedDate);
+            IsValid.Set(context, isValid);
         }
     }
 }

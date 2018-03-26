@@ -7,26 +7,26 @@ namespace LAT.WorkflowUtilities.DateTimes.Common
 {
     public class GetLocalTime
     {
-        public int? RetrieveTimeZoneCode(IOrganizationService service)
+        public static int? RetrieveTimeZoneCode(IOrganizationService service)
         {
             var currentUserSettings = service.RetrieveMultiple(
-
                 new QueryExpression("usersettings")
                 {
                     ColumnSet = new ColumnSet("timezonecode"),
                     Criteria = new FilterExpression
                     {
-                        Conditions =
-                        {
+                        Conditions = {
                             new ConditionExpression("systemuserid", ConditionOperator.EqualUserId)
                         }
                     }
-                }).Entities[0].ToEntity<Entity>();
+                });
 
-            return (int?)currentUserSettings.Attributes["timezonecode"];
+            var e = currentUserSettings.Entities[0].ToEntity<Entity>();
+
+            return (int?)e.Attributes["timezonecode"];
         }
 
-        public DateTime RetrieveLocalTimeFromUtcTime(DateTime utcTime, int? timeZoneCode, IOrganizationService service)
+        public static DateTime RetrieveLocalTimeFromUtcTime(DateTime utcTime, int? timeZoneCode, IOrganizationService service)
         {
             if (!timeZoneCode.HasValue)
                 return DateTime.Now;

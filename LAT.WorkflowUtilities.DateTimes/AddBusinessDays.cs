@@ -3,13 +3,17 @@ using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
     using LAT.WorkflowUtilities.DateTimes.Common;
 
-    public sealed class AddBusinessDays : CodeActivity
+    public sealed class AddBusinessDays : WorkFlowActivityBase
     {
+        public AddBusinessDays() : base(typeof(AddBusinessDays)) { }
+
         [RequiredArgument]
         [Input("Original Date")]
         public InArgument<DateTime> OriginalDate { get; set; }
@@ -22,59 +26,52 @@ namespace LAT.WorkflowUtilities.DateTimes
         [ReferenceTarget("calendar")]
         public InArgument<EntityReference> HolidayClosureCalendar { get; set; }
 
-        [OutputAttribute("Updated Date")]
+        [Output("Updated Date")]
         public OutArgument<DateTime> UpdatedDate { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
-            IWorkflowContext context = executionContext.GetExtension<IWorkflowContext>();
-            IOrganizationServiceFactory serviceFactory = executionContext.GetExtension<IOrganizationServiceFactory>();
-            IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
+            DateTime originalDate = OriginalDate.Get(context);
+            int businessDaysToAdd = BusinessDaysToAdd.Get(context);
+            EntityReference holidaySchedule = HolidayClosureCalendar.Get(context);
+
+            DateTime tempDate = originalDate;
+
+            if (businessDaysToAdd > 0)
             {
-                DateTime originalDate = OriginalDate.Get(executionContext);
-                int businessDaysToAdd = BusinessDaysToAdd.Get(executionContext);
-                EntityReference holidaySchedule = HolidayClosureCalendar.Get(executionContext);
-
-                DateTime tempDate = originalDate;
-
-                if (businessDaysToAdd > 0)
+                while (businessDaysToAdd > 0)
                 {
-                    while (businessDaysToAdd > 0)
-                    {
-                        tempDate = tempDate.AddDays(1);
+                    tempDate = tempDate.AddDays(1);
 
-                        if (tempDate.IsBusinessDay(service, holidaySchedule))
-                        {
-                            // Only decrease the days to add if the day we've just added counts as a business day
-                            businessDaysToAdd--;
-                        }
+                    if (tempDate.IsBusinessDay(localContext.OrganizationService, holidaySchedule))
+                    {
+                        // Only decrease the days to add if the day we've just added counts as a business day
+                        businessDaysToAdd--;
                     }
                 }
-                else if (businessDaysToAdd < 0)
+            }
+            else if (businessDaysToAdd < 0)
+            {
+                while (businessDaysToAdd < 0)
                 {
-                    while (businessDaysToAdd < 0)
+                    tempDate = tempDate.AddDays(-1);
+                    
+                    if (tempDate.IsBusinessDay(localContext.OrganizationService, holidaySchedule))
                     {
-                        tempDate = tempDate.AddDays(-1);
-
-                        if (tempDate.IsBusinessDay(service, holidaySchedule))
-                        {
-                            // Only increase the days to add if the day we've just added counts as a business day
-                            businessDaysToAdd++;
-                        }
+                        // Only increase the days to add if the day we've just added counts as a business day
+                        businessDaysToAdd++;
                     }
                 }
-
-                DateTime updatedDate = tempDate;
-
-                UpdatedDate.Set(executionContext, updatedDate);
             }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+
+            DateTime updatedDate = tempDate;
+
+            UpdatedDate.Set(context, updatedDate);
         }
     }
 }

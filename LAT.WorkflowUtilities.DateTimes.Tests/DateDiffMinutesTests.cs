@@ -1,9 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Workflow;
-using Moq;
+﻿using FakeXrmEasy;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Activities;
 using System.Collections.Generic;
 
 namespace LAT.WorkflowUtilities.DateTimes.Tests
@@ -11,16 +8,6 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
     [TestClass]
     public class DateDiffMinutesTests
     {
-        #region Class Constructor
-        private readonly string _namespaceClassAssembly;
-        public DateDiffMinutesTests()
-        {
-            //[Namespace.class name, assembly name] for the class/assembly being tested
-            //Namespace and class name can be found on the class file being tested
-            //Assembly name can be found under the project properties on the Application tab
-            _namespaceClassAssembly = "LAT.WorkflowUtilities.DateTimes.DateDiffMinutes" + ", " + "LAT.WorkflowUtilities.DateTimes";
-        }
-        #endregion
         #region Test Initialization and Cleanup
         // Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize()]
@@ -40,335 +27,279 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
         #endregion
 
         [TestMethod]
-        public void MinusOneMinute()
+        public void DateDiffMinutes_Minus_One_Minute()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 3, 8, 47, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 1;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void MinusOneHour()
+        public void DateDiffMinutes_Minus_One_Hour()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 3, 7, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 60;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void MinusFiveHours()
+        public void DateDiffMinutes_Minus_Five_Hours()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 3, 3, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 300;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void MinusTwentyFiveHours()
+        public void DateDiffMinutes_Minus_Twenty_Five_Hours()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 2, 7, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 1500;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void MinusTwoHunderdHours()
+        public void DateDiffMinutes_Minus_Two_Hunderd_Hours()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 6, 25, 0, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 12000;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void OneMinute()
+        public void DateDiffMinutes_Add_One_Minute()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 3, 8, 49, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 1;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void ThirteenMinuteWithSeconds()
+        public void DateDiffMinutes_Add_Thirteen_Minutes_With_Seconds()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 2, 21, 5, 47, 44, 0)},
                 { "EndingDate", new DateTime(2014, 2, 21, 6, 00, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 13;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void OneHour()
+        public void DateDiffMinutes_Add_One_Hour()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 3, 9, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 60;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void FiveHours()
+        public void DateDiffMinutes_Add_Five_Hours()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 3, 13, 48, 0, 00)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 300;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void TwentyFiveHours()
+        public void DateDiffMinutes_Add_Twenty_Five_Hours()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 4, 9, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 1500;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void TwoHunderdHours()
+        public void DateDiffMinutes_Add_Two_Hunderd_Hours()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 11, 16, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 12000;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
 
         [TestMethod]
-        public void Same()
+        public void DateDiffMinutes_Same_Day()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
                 { "EndingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)}
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const int expected = 0;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<DateDiffMinutes>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["MinutesDifference"]);
-        }
-
-        /// <summary>
-        /// Invokes the workflow.
-        /// </summary>
-        /// <param name="name">Namespace.Class, Assembly</param>
-        /// <param name="target">The target entity</param>
-        /// <param name="inputs">The workflow input parameters</param>
-        /// <param name="configuredServiceMock">The function to configure the Organization Service</param>
-        /// <returns>The workflow output parameters</returns>
-        private static IDictionary<string, object> InvokeWorkflow(string name, ref Entity target, Dictionary<string, object> inputs,
-            Func<Mock<IOrganizationService>, Mock<IOrganizationService>> configuredServiceMock)
-        {
-            var testClass = Activator.CreateInstance(Type.GetType(name)) as CodeActivity; ;
-
-            var serviceMock = new Mock<IOrganizationService>();
-            var factoryMock = new Mock<IOrganizationServiceFactory>();
-            var tracingServiceMock = new Mock<ITracingService>();
-            var workflowContextMock = new Mock<IWorkflowContext>();
-
-            //Apply configured Organization Service Mock
-            if (configuredServiceMock != null)
-                serviceMock = configuredServiceMock(serviceMock);
-
-            IOrganizationService service = serviceMock.Object;
-
-            //Mock workflow Context
-            var workflowUserId = Guid.NewGuid();
-            var workflowCorrelationId = Guid.NewGuid();
-            var workflowInitiatingUserId = Guid.NewGuid();
-
-            //Workflow Context Mock
-            workflowContextMock.Setup(t => t.InitiatingUserId).Returns(workflowInitiatingUserId);
-            workflowContextMock.Setup(t => t.CorrelationId).Returns(workflowCorrelationId);
-            workflowContextMock.Setup(t => t.UserId).Returns(workflowUserId);
-            var workflowContext = workflowContextMock.Object;
-
-            //Organization Service Factory Mock
-            factoryMock.Setup(t => t.CreateOrganizationService(It.IsAny<Guid>())).Returns(service);
-            var factory = factoryMock.Object;
-
-            //Tracing Service - Content written appears in output
-            tracingServiceMock.Setup(t => t.Trace(It.IsAny<string>(), It.IsAny<object[]>())).Callback<string, object[]>(MoqExtensions.WriteTrace);
-            var tracingService = tracingServiceMock.Object;
-
-            //Parameter Collection
-            ParameterCollection inputParameters = new ParameterCollection { { "Target", target } };
-            workflowContextMock.Setup(t => t.InputParameters).Returns(inputParameters);
-
-            //Workflow Invoker
-            var invoker = new WorkflowInvoker(testClass);
-            invoker.Extensions.Add(() => tracingService);
-            invoker.Extensions.Add(() => workflowContext);
-            invoker.Extensions.Add(() => factory);
-
-            return invoker.Invoke(inputs);
+            //Assert
+            Assert.AreEqual(expected, result["MinutesDifference"]);
         }
     }
 }

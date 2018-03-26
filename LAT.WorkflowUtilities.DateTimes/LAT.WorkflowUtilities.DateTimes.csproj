@@ -74,7 +74,14 @@
     <Compile Include="AddWeeks.cs" />
     <Compile Include="Common\BusinessDayLogic.cs" />
     <Compile Include="Common\GetLocalTime.cs" />
+    <Compile Include="DateDiff.cs" />
+    <Compile Include="DateDiffSeconds.cs" />
     <Compile Include="DateDiffMinutes.cs" />
+    <Compile Include="GetMonthName.cs" />
+    <Compile Include="GetSecondNumber.cs" />
+    <Compile Include="GetMinuteNumber.cs" />
+    <Compile Include="GetHourNumber.cs" />
+    <Compile Include="GetFormattedDateString.cs" />
     <Compile Include="GetYearNumber.cs" />
     <Compile Include="GetDayNumberOfWeek.cs" />
     <Compile Include="GetDayOfWeek.cs" />
@@ -106,8 +113,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="RelativeTime.cs" />
+    <Compile Include="SetDatePart.cs" />
+    <Compile Include="SetTime.cs" />
     <Compile Include="ToDateTime.cs" />
     <Compile Include="ToUTCString.cs" />
+    <Compile Include="WorkFlowActivityBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="LATKey.snk" />

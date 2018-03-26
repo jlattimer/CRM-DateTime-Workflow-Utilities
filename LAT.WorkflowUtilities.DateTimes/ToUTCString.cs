@@ -1,13 +1,16 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Workflow;
+﻿using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
 using System.Globalization;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public sealed class ToUTCString : CodeActivity
+    public sealed class ToUTCString : WorkFlowActivityBase
     {
+        public ToUTCString() : base(typeof(ToUTCString)) { }
+
         [RequiredArgument]
         [Input("Date To Format")]
         public InArgument<DateTime> DateToFormat { get; set; }
@@ -16,30 +19,26 @@ namespace LAT.WorkflowUtilities.DateTimes
         [Default("en-US")]
         public InArgument<string> Culture { get; set; }
 
-        [OutputAttribute("Formatted Date String")]
+        [Output("Formatted Date String")]
         public OutArgument<string> FormattedDateString { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
-            {
-                DateTime originalDate = DateToFormat.Get(executionContext);
-                string cultureIn = Culture.Get(executionContext);
+            DateTime originalDate = DateToFormat.Get(context);
+            string cultureIn = Culture.Get(context);
 
-                CultureInfo culture = null;
-                if (!string.IsNullOrEmpty(cultureIn))
-                    culture = new CultureInfo(cultureIn);
+            CultureInfo culture = null;
+            if (!string.IsNullOrEmpty(cultureIn))
+                culture = new CultureInfo(cultureIn);
 
-                string formattedDateString = originalDate.ToUniversalTime().ToString(culture);
+            string formattedDateString = originalDate.ToUniversalTime().ToString(culture);
 
-                FormattedDateString.Set(executionContext, formattedDateString);
-            }
-            catch (Exception ex)
-            {
-                tracer.Trace("Exception: {0}", ex.ToString());
-            }
+            FormattedDateString.Set(context, formattedDateString);
         }
     }
 }

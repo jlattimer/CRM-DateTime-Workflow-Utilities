@@ -1,10 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FakeXrmEasy;
+using FakeXrmEasy.FakeMessageExecutors;
+using Microsoft.Crm.Sdk.Messages;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Query;
-using Microsoft.Xrm.Sdk.Workflow;
-using Moq;
 using System;
-using System.Activities;
 using System.Collections.Generic;
 
 namespace LAT.WorkflowUtilities.DateTimes.Tests
@@ -12,16 +11,6 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
     [TestClass]
     public class IsBusinessDayTests
     {
-        #region Class Constructor
-        private readonly string _namespaceClassAssembly;
-        public IsBusinessDayTests()
-        {
-            //[Namespace.class name, assembly name] for the class/assembly being tested
-            //Namespace and class name can be found on the class file being tested
-            //Assembly name can be found under the project properties on the Application tab
-            _namespaceClassAssembly = "LAT.WorkflowUtilities.DateTimes.IsBusinessDay" + ", " + "LAT.WorkflowUtilities.DateTimes";
-        }
-        #endregion
         #region Test Initialization and Cleanup
         // Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize()]
@@ -41,186 +30,142 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
         #endregion
 
         [TestMethod]
-        public void WeekDayUserLocal()
+        public void IsBusinessDay_Week_Day_User_Local()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
-            {
-                { "DateToCheck", new DateTime(2015, 5, 13, 3, 48, 0, 0)},
-                { "HolidayClosureCalendar", null },
-                { "EvaluateAsUserLocal", true } 
-            };
-
-            //Expected value
-            const bool expected = true;
-
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, WeekDayUserLocalSetup);
-
-            //Test
-            Assert.AreEqual(expected, output["ValidBusinessDay"]);
-        }
-
-        /// <summary>
-        /// Modify to mock CRM Organization Service actions
-        /// </summary>
-        /// <param name="serviceMock">The Organization Service to mock</param>
-        /// <returns>Configured Organization Service</returns>
-        private static Mock<IOrganizationService> WeekDayUserLocalSetup(Mock<IOrganizationService> serviceMock)
-        {
             EntityCollection userSettings = new EntityCollection();
-            Entity userSetting = new Entity("usersettings");
-            userSetting["timezonecode"] = 20;
+            Entity userSetting = new Entity("usersettings")
+            {
+                Id = Guid.NewGuid(),
+                ["systemuserid"] = Guid.NewGuid(),
+                ["timezonecode"] = 20
+            };
             userSettings.Entities.Add(userSetting);
 
-            serviceMock.Setup(t =>
-                t.RetrieveMultiple(It.IsAny<QueryExpression>()))
-                .ReturnsInOrder(userSettings);
-
-            OrganizationResponse localTime = new OrganizationResponse();
-            ParameterCollection results = new ParameterCollection { { "LocalTime", new DateTime(2015, 5, 12, 9, 48, 0, 0) } };
-            localTime.Results = results;
-
-            serviceMock.Setup(t =>
-                t.Execute(It.IsAny<OrganizationRequest>()))
-                .ReturnsInOrder(localTime);
-
-            return serviceMock;
-        }
-
-        [TestMethod]
-        public void WeekDayUtc()
-        {
-            //Target
-            Entity targetEntity = null;
-
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "DateToCheck", new DateTime(2015, 5, 13, 3, 48, 0, 0)},
                 { "HolidayClosureCalendar", null },
-                { "EvaluateAsUserLocal", false } 
+                { "EvaluateAsUserLocal", true }
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+            xrmFakedContext.Initialize(new List<Entity> { userSetting });
+            xrmFakedContext.CallerId = new EntityReference("systemuser", userSetting.GetAttributeValue<Guid>("systemuserid"));
+            var fakeLocalTimeFromUtcTimeRequestExecutor = new FakeLocalTimeFromUtcTimeRequestExecutor(new DateTime(2015, 5, 12, 9, 48, 0, 0));
+            xrmFakedContext.AddFakeMessageExecutor<LocalTimeFromUtcTimeRequest>(fakeLocalTimeFromUtcTimeRequestExecutor);
+
             const bool expected = true;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<IsBusinessDay>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["ValidBusinessDay"]);
+            //Assert
+            Assert.AreEqual(expected, result["ValidBusinessDay"]);
         }
 
         [TestMethod]
-        public void WeekEndUserLocal()
+        public void IsBusinessDay_Week_Day_Utc()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
+            {
+                { "DateToCheck", new DateTime(2015, 5, 13, 3, 48, 0, 0)},
+                { "HolidayClosureCalendar", null },
+                { "EvaluateAsUserLocal", false }
+            };
+
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
+            const bool expected = true;
+
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<IsBusinessDay>(workflowContext, inputs);
+
+            //Assert
+            Assert.AreEqual(expected, result["ValidBusinessDay"]);
+        }
+
+        [TestMethod]
+        public void IsBusinessDay_Week_End_User_Local()
+        {
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
+
+            EntityCollection userSettings = new EntityCollection();
+            Entity userSetting = new Entity("usersettings")
+            {
+                Id = Guid.NewGuid(),
+                ["systemuserid"] = Guid.NewGuid(),
+                ["timezonecode"] = 20
+            };
+            userSettings.Entities.Add(userSetting);
+
+            var inputs = new Dictionary<string, object>
             {
                 { "DateToCheck", new DateTime(2015, 5, 16, 3, 48, 0, 0)},
                 { "HolidayClosureCalendar", null },
-                { "EvaluateAsUserLocal", true } 
+                { "EvaluateAsUserLocal", true }
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+            xrmFakedContext.Initialize(new List<Entity> { userSetting });
+            xrmFakedContext.CallerId = new EntityReference("systemuser", userSetting.GetAttributeValue<Guid>("systemuserid"));
+            var fakeLocalTimeFromUtcTimeRequestExecutor = new FakeLocalTimeFromUtcTimeRequestExecutor(new DateTime(2015, 5, 15, 9, 48, 0, 0));
+            xrmFakedContext.AddFakeMessageExecutor<LocalTimeFromUtcTimeRequest>(fakeLocalTimeFromUtcTimeRequestExecutor);
+
             const bool expected = true;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, WeekEndUserLocalSetup);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<IsBusinessDay>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["ValidBusinessDay"]);
-        }
-
-        /// <summary>
-        /// Modify to mock CRM Organization Service actions
-        /// </summary>
-        /// <param name="serviceMock">The Organization Service to mock</param>
-        /// <returns>Configured Organization Service</returns>
-        private static Mock<IOrganizationService> WeekEndUserLocalSetup(Mock<IOrganizationService> serviceMock)
-        {
-            EntityCollection userSettings = new EntityCollection();
-            Entity userSetting = new Entity("usersettings");
-            userSetting["timezonecode"] = 20;
-            userSettings.Entities.Add(userSetting);
-
-            serviceMock.Setup(t =>
-                t.RetrieveMultiple(It.IsAny<QueryExpression>()))
-                .ReturnsInOrder(userSettings);
-
-            OrganizationResponse localTime = new OrganizationResponse();
-            ParameterCollection results = new ParameterCollection { { "LocalTime", new DateTime(2015, 5, 15, 9, 48, 0, 0) } };
-            localTime.Results = results;
-
-            serviceMock.Setup(t =>
-                t.Execute(It.IsAny<OrganizationRequest>()))
-                .ReturnsInOrder(localTime);
-
-            return serviceMock;
+            //Assert
+            Assert.AreEqual(expected, result["ValidBusinessDay"]);
         }
 
         [TestMethod]
-        public void WeekEndUtc()
+        public void IsBusinessDay_Week_End_Utc()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            var inputs = new Dictionary<string, object>
             {
                 { "DateToCheck", new DateTime(2015, 5, 16, 8, 48, 0, 0)},
                 { "HolidayClosureCalendar", null },
-                { "EvaluateAsUserLocal", false } 
+                { "EvaluateAsUserLocal", false }
             };
 
-            //Expected value
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
             const bool expected = false;
 
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, null);
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<IsBusinessDay>(workflowContext, inputs);
 
-            //Test
-            Assert.AreEqual(expected, output["ValidBusinessDay"]);
+            //Assert
+            Assert.AreEqual(expected, result["ValidBusinessDay"]);
         }
 
         [TestMethod]
-        public void WeekDayHolidayUserLocal()
+        public void IsBusinessDay_Week_Day_Holiday_User_Local()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
+            EntityCollection userSettings = new EntityCollection();
+            Entity userSetting = new Entity("usersettings")
             {
-                { "DateToCheck", new DateTime(2014, 7, 4, 8, 48, 0, 0)},
-                { "HolidayClosureCalendar", new EntityReference{LogicalName = "calendar", Id = new Guid("e9717a91-ba0a-e411-b681-6c3be5a8ad70")}},
-                { "EvaluateAsUserLocal", true } 
+                Id = Guid.NewGuid(),
+                ["systemuserid"] = Guid.NewGuid(),
+                ["timezonecode"] = 20
             };
+            userSettings.Entities.Add(userSetting);
 
-            //Expected value
-            const bool expected = false;
-
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, WeekDayHolidayUserLocalSetup);
-
-            //Test
-            Assert.AreEqual(expected, output["ValidBusinessDay"]);
-        }
-
-        /// <summary>
-        /// Modify to mock CRM Organization Service actions
-        /// </summary>
-        /// <param name="serviceMock">The Organization Service to mock</param>
-        /// <returns>Configured Organization Service</returns>
-        private static Mock<IOrganizationService> WeekDayHolidayUserLocalSetup(Mock<IOrganizationService> serviceMock)
-        {
             EntityCollection calendarRules = new EntityCollection();
             Entity calendarRule = new Entity
             {
@@ -242,62 +187,34 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
             holidayCalendar.Attributes.Add("name", "Main Holiday Schedule");
             holidayCalendar.Attributes.Add("calendarrules", calendarRules);
 
-            serviceMock.Setup(t =>
-                t.Retrieve(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<ColumnSet>()))
-                .ReturnsInOrder(holidayCalendar);
+            var inputs = new Dictionary<string, object>
+            {
+                { "DateToCheck", new DateTime(2014, 7, 4, 8, 48, 0, 0)},
+                { "HolidayClosureCalendar", new EntityReference{LogicalName = "calendar", Id = new Guid("e9717a91-ba0a-e411-b681-6c3be5a8ad70")}},
+                { "EvaluateAsUserLocal", true }
+            };
 
-            EntityCollection userSettings = new EntityCollection();
-            Entity userSetting = new Entity("usersettings");
-            userSetting["timezonecode"] = 20;
-            userSettings.Entities.Add(userSetting);
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+            xrmFakedContext.Initialize(new List<Entity> { userSetting, calendarRule, holidayCalendar });
+            xrmFakedContext.CallerId = new EntityReference("systemuser", userSetting.GetAttributeValue<Guid>("systemuserid"));
+            var fakeLocalTimeFromUtcTimeRequestExecutor = new FakeLocalTimeFromUtcTimeRequestExecutor(new DateTime(2014, 7, 4, 2, 48, 0, 0));
+            xrmFakedContext.AddFakeMessageExecutor<LocalTimeFromUtcTimeRequest>(fakeLocalTimeFromUtcTimeRequestExecutor);
 
-            serviceMock.Setup(t =>
-                t.RetrieveMultiple(It.IsAny<QueryExpression>()))
-                .ReturnsInOrder(userSettings);
+            const bool expected = false;
 
-            OrganizationResponse localTime = new OrganizationResponse();
-            ParameterCollection results = new ParameterCollection { { "UtcTime", new DateTime(2014, 7, 4, 2, 48, 0, 0) } };
-            localTime.Results = results;
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<IsBusinessDay>(workflowContext, inputs);
 
-            serviceMock.Setup(t =>
-                t.Execute(It.IsAny<OrganizationRequest>()))
-                .ReturnsInOrder(localTime);
-
-            return serviceMock;
+            //Assert
+            Assert.AreEqual(expected, result["ValidBusinessDay"]);
         }
 
         [TestMethod]
-        public void WeekDayHolidayUtc()
+        public void IsBusinessDay_Week_Day_Holiday_Utc()
         {
-            //Target
-            Entity targetEntity = null;
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
 
-            //Input parameters
-            var inputs = new Dictionary<string, object> 
-            {
-                { "DateToCheck", new DateTime(2014, 7, 5, 2, 48, 0, 0)},
-                { "HolidayClosureCalendar", new EntityReference{LogicalName = "calendar", Id = new Guid("b01748c5-d0ba-e311-9ec9-6c3be5a8a0c8")}},
-                { "EvaluateAsUserLocal", false } 
-            };
-
-            //Expected value
-            const bool expected = false;
-
-            //Invoke the workflow
-            var output = InvokeWorkflow(_namespaceClassAssembly, ref targetEntity, inputs, WeekDayHolidayUtcSetup);
-
-            //Test
-            Assert.AreEqual(expected, output["ValidBusinessDay"]);
-        }
-
-        /// <summary>
-        /// Modify to mock CRM Organization Service actions
-        /// </summary>
-        /// <param name="serviceMock">The Organization Service to mock</param>
-        /// <returns>Configured Organization Service</returns>
-        private static Mock<IOrganizationService> WeekDayHolidayUtcSetup(Mock<IOrganizationService> serviceMock)
-        {
-            EntityCollection calendarRules = new EntityCollection();
             Entity calendarRule = new Entity
             {
                 LogicalName = "calendarRule",
@@ -307,78 +224,61 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
             calendarRule.Attributes.Add("name", "4th of July");
             calendarRule.Attributes.Add("starttime", new DateTime(2014, 7, 4, 0, 0, 0));
             calendarRule.Attributes.Add("duration", 1440);
-            calendarRules.Entities.Add(calendarRule);
 
             Entity holidayCalendar = new Entity
             {
-                Id = new Guid("b01748c5-d0ba-e311-9ec9-6c3be5a8a0c8"),
+                Id = new Guid("e9717a91-ba0a-e411-b681-6c3be5a8ad70"),
                 LogicalName = "calendar",
                 Attributes = new AttributeCollection()
             };
-            holidayCalendar.Attributes.Add("name", "Business Closure Calendar");
-            holidayCalendar.Attributes.Add("calendarrules", calendarRules);
+            holidayCalendar.Attributes.Add("name", "Main Holiday Schedule");
 
-            serviceMock.Setup(t =>
-                t.Retrieve(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<ColumnSet>()))
-                .ReturnsInOrder(holidayCalendar);
+            var inputs = new Dictionary<string, object>
+            {
+                { "DateToCheck", new DateTime(2014, 7, 5, 2, 48, 0, 0)},
+                { "HolidayClosureCalendar", new EntityReference{LogicalName = "calendar", Id = new Guid("b01748c5-d0ba-e311-9ec9-6c3be5a8a0c8")}},
+                { "EvaluateAsUserLocal", false }
+            };
 
-            return serviceMock;
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+            xrmFakedContext.Initialize(new List<Entity> { calendarRule, holidayCalendar });
+
+            const bool expected = false;
+
+            //Act
+            var result = xrmFakedContext.ExecuteCodeActivity<IsBusinessDay>(workflowContext, inputs);
+
+            //Assert
+            Assert.AreEqual(expected, result["ValidBusinessDay"]);
         }
 
-        /// <summary>
-        /// Invokes the workflow.
-        /// </summary>
-        /// <param name="name">Namespace.Class, Assembly</param>
-        /// <param name="target">The target entity</param>
-        /// <param name="inputs">The workflow input parameters</param>
-        /// <param name="configuredServiceMock">The function to configure the Organization Service</param>
-        /// <returns>The workflow output parameters</returns>
-        private static IDictionary<string, object> InvokeWorkflow(string name, ref Entity target, Dictionary<string, object> inputs,
-            Func<Mock<IOrganizationService>, Mock<IOrganizationService>> configuredServiceMock)
+        private class FakeLocalTimeFromUtcTimeRequestExecutor : IFakeMessageExecutor
         {
-            var testClass = Activator.CreateInstance(Type.GetType(name)) as CodeActivity; ;
+            private readonly DateTime _date;
 
-            var serviceMock = new Mock<IOrganizationService>();
-            var factoryMock = new Mock<IOrganizationServiceFactory>();
-            var tracingServiceMock = new Mock<ITracingService>();
-            var workflowContextMock = new Mock<IWorkflowContext>();
+            public FakeLocalTimeFromUtcTimeRequestExecutor(DateTime date)
+            {
+                _date = date;
+            }
 
-            //Apply configured Organization Service Mock
-            if (configuredServiceMock != null)
-                serviceMock = configuredServiceMock(serviceMock);
+            public bool CanExecute(OrganizationRequest request)
+            {
+                return request is LocalTimeFromUtcTimeRequest;
+            }
 
-            IOrganizationService service = serviceMock.Object;
+            public Type GetResponsibleRequestType()
+            {
+                return typeof(LocalTimeFromUtcTimeRequest);
+            }
 
-            //Mock workflow Context
-            var workflowUserId = Guid.NewGuid();
-            var workflowCorrelationId = Guid.NewGuid();
-            var workflowInitiatingUserId = Guid.NewGuid();
+            public OrganizationResponse Execute(OrganizationRequest request, XrmFakedContext ctx)
+            {
+                OrganizationResponse localTime = new OrganizationResponse();
+                ParameterCollection results = new ParameterCollection { { "LocalTime", _date } };
+                localTime.Results = results;
 
-            //Workflow Context Mock
-            workflowContextMock.Setup(t => t.InitiatingUserId).Returns(workflowInitiatingUserId);
-            workflowContextMock.Setup(t => t.CorrelationId).Returns(workflowCorrelationId);
-            workflowContextMock.Setup(t => t.UserId).Returns(workflowUserId);
-            var workflowContext = workflowContextMock.Object;
-
-            //Organization Service Factory Mock
-            factoryMock.Setup(t => t.CreateOrganizationService(It.IsAny<Guid>())).Returns(service);
-            var factory = factoryMock.Object;
-
-            //Tracing Service - Content written appears in output
-            tracingServiceMock.Setup(t => t.Trace(It.IsAny<string>(), It.IsAny<object[]>())).Callback<string, object[]>(MoqExtensions.WriteTrace);
-            var tracingService = tracingServiceMock.Object;
-
-            //Parameter Collection
-            ParameterCollection inputParameters = new ParameterCollection { { "Target", target } };
-            workflowContextMock.Setup(t => t.InputParameters).Returns(inputParameters);
-
-            //Workflow Invoker
-            var invoker = new WorkflowInvoker(testClass);
-            invoker.Extensions.Add(() => tracingService);
-            invoker.Extensions.Add(() => workflowContext);
-            invoker.Extensions.Add(() => factory);
-
-            return invoker.Invoke(inputs);
+                return localTime;
+            }
         }
     }
 }

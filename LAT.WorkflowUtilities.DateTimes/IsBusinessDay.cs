@@ -4,11 +4,15 @@ using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    public sealed class IsBusinessDay : CodeActivity
+    public sealed class IsBusinessDay : WorkFlowActivityBase
     {
+        public IsBusinessDay() : base(typeof(IsBusinessDay)) { }
+
         [RequiredArgument]
         [Input("Date To Check")]
         public InArgument<DateTime> DateToCheck { get; set; }
@@ -22,36 +26,35 @@ namespace LAT.WorkflowUtilities.DateTimes
         [Default("True")]
         public InArgument<bool> EvaluateAsUserLocal { get; set; }
 
-        [OutputAttribute("Valid Business Day")]
+        [Output("Valid Business Day")]
         public OutArgument<bool> ValidBusinessDay { get; set; }
 
-        protected override void Execute(CodeActivityContext executionContext)
+        protected override void ExecuteCrmWorkFlowActivity(CodeActivityContext context, LocalWorkflowContext localContext)
         {
-            ITracingService tracer = executionContext.GetExtension<ITracingService>();
-            IWorkflowContext context = executionContext.GetExtension<IWorkflowContext>();
-            IOrganizationServiceFactory serviceFactory = executionContext.GetExtension<IOrganizationServiceFactory>();
-            IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (localContext == null)
+                throw new ArgumentNullException(nameof(localContext));
 
-            try
+            DateTime dateToCheck = DateToCheck.Get(context);
+            bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(context);
+
+            if (evaluateAsUserLocal)
             {
-                DateTime dateToCheck = this.DateToCheck.Get(executionContext);
-                bool evaluateAsUserLocal = this.EvaluateAsUserLocal.Get(executionContext);
+                int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
+                dateToCheck = GetLocalTime.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
+            }
+            
+            var result = dateToCheck.IsBusinessDay(service, this.HolidayClosureCalendar.Get(executionContext));
 
-                if (evaluateAsUserLocal)
-                {
-                    GetLocalTime glt = new GetLocalTime();
-                    int? timeZoneCode = glt.RetrieveTimeZoneCode(service);
-                    dateToCheck = glt.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, service);
-                }
-
-                var result = dateToCheck.IsBusinessDay(service, this.HolidayClosureCalendar.Get(executionContext));
-
-                this.ValidBusinessDay.Set(executionContext, result);
+            this.ValidBusinessDay.Set(executionContext, result);
             }
             catch (Exception ex)
             {
                 tracer.Trace("Exception: {0}", ex.ToString());
             }
+
+            ValidBusinessDay.Set(context, true);
         }
     }
 }
