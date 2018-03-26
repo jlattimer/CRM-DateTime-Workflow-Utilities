@@ -20,8 +20,7 @@
         /// <returns>True if the day is a business day</returns>
         public static bool IsBusinessDay(this DateTime dateToCheck, IOrganizationService service = null, EntityReference holidaySchedule = null)
         {
-            var validBusinessDay =
-                dateToCheck.DayOfWeek != DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
+            var validBusinessDay = dateToCheck.DayOfWeek != DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
 
             if (!validBusinessDay)
             {
@@ -35,9 +34,7 @@
 
             if (service == null)
             {
-                throw new ArgumentException(
-                    $"{holidaySchedule} is provided but the Organisation Service is null.",
-                    nameof(service));
+                throw new ArgumentException($"{holidaySchedule} is provided but the Organisation Service is null.", nameof(service));
             }
 
             var calendar = service.Retrieve("calendar", holidaySchedule.Id, new ColumnSet(true));
@@ -48,7 +45,7 @@
 
             var calendarRules = calendar.GetAttributeValue<EntityCollection>("calendarrules");
 
-            foreach (Entity calendarRule in calendarRules.Entities)
+            foreach (var calendarRule in calendarRules.Entities)
             {
                 // Date is not stored as UTC
                 var startTime = calendarRule.GetAttributeValue<DateTime>("starttime");
