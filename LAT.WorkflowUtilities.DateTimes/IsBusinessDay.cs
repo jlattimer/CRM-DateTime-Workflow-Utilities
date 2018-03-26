@@ -44,39 +44,14 @@ namespace LAT.WorkflowUtilities.DateTimes
                 int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
                 dateToCheck = GetLocalTime.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
             }
+            
+            var result = dateToCheck.IsBusinessDay(service, this.HolidayClosureCalendar.Get(executionContext));
 
-            EntityReference holidaySchedule = HolidayClosureCalendar.Get(context);
-
-            bool validBusinessDay = dateToCheck.DayOfWeek != DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
-
-            if (!validBusinessDay)
-            {
-                ValidBusinessDay.Set(context, false);
-                return;
+            this.ValidBusinessDay.Set(executionContext, result);
             }
-
-            if (holidaySchedule != null)
+            catch (Exception ex)
             {
-                Entity calendar = localContext.OrganizationService.Retrieve("calendar", holidaySchedule.Id, new ColumnSet(true));
-                if (calendar == null) return;
-
-                EntityCollection calendarRules = calendar.GetAttributeValue<EntityCollection>("calendarrules");
-                foreach (Entity calendarRule in calendarRules.Entities)
-                {
-                    //Date is not stored as UTC
-                    DateTime startTime = calendarRule.GetAttributeValue<DateTime>("starttime");
-
-                    //Not same date
-                    if (!startTime.Date.Equals(dateToCheck.Date))
-                        continue;
-
-                    //Not full day event
-                    if (startTime.Subtract(startTime.TimeOfDay) != startTime || calendarRule.GetAttributeValue<int>("duration") != 1440)
-                        continue;
-
-                    ValidBusinessDay.Set(context, false);
-                    return;
-                }
+                tracer.Trace("Exception: {0}", ex.ToString());
             }
 
             ValidBusinessDay.Set(context, true);
