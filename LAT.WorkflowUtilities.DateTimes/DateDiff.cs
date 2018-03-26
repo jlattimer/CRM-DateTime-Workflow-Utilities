@@ -42,16 +42,12 @@ namespace LAT.WorkflowUtilities.DateTimes
 
             StringBuilder sb = new StringBuilder();
 
-            //if (diff.Days > 0)
-                sb.Append($"{diff.Days}d.");
+            sb.Append($"{diff.Days}d.");
 
-            //if (diff.Hours > 0)
-                sb.Append($"{diff.Hours:00}h:");
+            sb.Append($"{diff.Hours:00}h:");
 
-            //if (diff.Minutes > 0)
-                sb.Append($"{diff.Minutes:00}m");
+            sb.Append($"{diff.Minutes:00}m");
 
-            //if (showSeconds && diff.Seconds > 0)
             if (showSeconds)
                 sb.Append($":{diff.Seconds:00}s");
 
