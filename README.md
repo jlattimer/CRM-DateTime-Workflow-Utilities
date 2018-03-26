@@ -41,7 +41,7 @@ Custom workflow actions that deal with date and time values in Dynamics CRM 2015
 * ToDateTime
 * To UTC String
 * Set Time 
-* Get Formatted Time 
+* Get Formatted Date String  
 * Set DatePart 
 
 **Note - I am no longer supporting the 2011/2013 version of this solution.** 
