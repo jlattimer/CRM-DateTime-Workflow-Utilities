@@ -36,25 +36,25 @@ namespace LAT.WorkflowUtilities.DateTimes
             if (localContext == null)
                 throw new ArgumentNullException(nameof(localContext));
 
-            DateTime dateToCheck = DateToCheck.Get(context);
-            bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(context);
-
-            if (evaluateAsUserLocal)
+            try
             {
-                int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
-                dateToCheck = GetLocalTime.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
-            }
-            
-            var result = dateToCheck.IsBusinessDay(service, this.HolidayClosureCalendar.Get(executionContext));
+                DateTime dateToCheck = DateToCheck.Get(context);
+                bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(context);
 
-            this.ValidBusinessDay.Set(executionContext, result);
+                if (evaluateAsUserLocal)
+                {
+                    int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
+                    dateToCheck = GetLocalTime.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
+                }
+            
+                var result = dateToCheck.IsBusinessDay(localContext.OrganizationService, this.HolidayClosureCalendar.Get(context));
+
+                this.ValidBusinessDay.Set(context, result);
             }
             catch (Exception ex)
             {
-                tracer.Trace("Exception: {0}", ex.ToString());
+                throw new InvalidPluginExecutionException(OperationStatus.Failed, $"{ex.Message}");
             }
-
-            ValidBusinessDay.Set(context, true);
         }
     }
 }

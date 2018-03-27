@@ -20,7 +20,7 @@
         /// <returns>True if the day is a business day</returns>
         public static bool IsBusinessDay(this DateTime dateToCheck, IOrganizationService service = null, EntityReference holidaySchedule = null)
         {
-            var validBusinessDay = dateToCheck.DayOfWeek != DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
+            var validBusinessDay = dateToCheck.DayOfWeek != DayOfWeek.Saturday && dateToCheck.DayOfWeek != DayOfWeek.Sunday;
 
             if (!validBusinessDay)
             {
