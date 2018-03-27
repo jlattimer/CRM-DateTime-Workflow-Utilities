@@ -35,7 +35,9 @@ namespace LAT.WorkflowUtilities.DateTimes
             try
             {
                 var dateToCheck = StartDate.Get(context);
+                dateToCheck = new DateTime(dateToCheck.Year, dateToCheck.Month, dateToCheck.Day, 0, 0, 0);
                 var endDate = EndDate.Get(context);
+                endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, 0, 0, 0);
 
                 var businessDays = 0;
                 while (dateToCheck <= endDate)
