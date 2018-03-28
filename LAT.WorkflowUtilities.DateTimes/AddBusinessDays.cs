@@ -8,6 +8,8 @@ using System.Activities;
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
+    using LAT.WorkflowUtilities.DateTimes.Common;
+
     public sealed class AddBusinessDays : WorkFlowActivityBase
     {
         public AddBusinessDays() : base(typeof(AddBusinessDays)) { }
