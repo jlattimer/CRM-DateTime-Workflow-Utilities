@@ -43,7 +43,7 @@ namespace LAT.WorkflowUtilities.DateTimes
                 while (dateToCheck <= endDate)
                 {
                     if (dateToCheck.IsBusinessDay(localContext.OrganizationService,
-                        this.HolidayClosureCalendar.Get(context)))
+                        HolidayClosureCalendar.Get(context)))
                     {
                         businessDays++;
                     }
@@ -51,7 +51,7 @@ namespace LAT.WorkflowUtilities.DateTimes
                     dateToCheck = dateToCheck.AddDays(1);
                 }
 
-                this.NumberOfBusinessDays.Set(context, businessDays);
+                NumberOfBusinessDays.Set(context, businessDays);
             }
             catch (Exception ex)
             {
