@@ -3,6 +3,8 @@ using System.Activities;
 using LAT.WorkflowUtilities.DateTimes.Common;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Workflow;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
@@ -32,31 +34,23 @@ namespace LAT.WorkflowUtilities.DateTimes
             if (localContext == null)
                 throw new ArgumentNullException(nameof(localContext));
 
-            try
+            var dateToCheck = StartDate.Get(context);
+            dateToCheck = new DateTime(dateToCheck.Year, dateToCheck.Month, dateToCheck.Day, 0, 0, 0);
+            var endDate = EndDate.Get(context);
+            endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, 0, 0, 0);
+
+            var businessDays = 0;
+            while (dateToCheck <= endDate)
             {
-                var dateToCheck = StartDate.Get(context);
-                dateToCheck = new DateTime(dateToCheck.Year, dateToCheck.Month, dateToCheck.Day, 0, 0, 0);
-                var endDate = EndDate.Get(context);
-                endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, 0, 0, 0);
-
-                var businessDays = 0;
-                while (dateToCheck <= endDate)
+                if (dateToCheck.IsBusinessDay(localContext.OrganizationService, HolidayClosureCalendar.Get(context)))
                 {
-                    if (dateToCheck.IsBusinessDay(localContext.OrganizationService,
-                        HolidayClosureCalendar.Get(context)))
-                    {
-                        businessDays++;
-                    }
-
-                    dateToCheck = dateToCheck.AddDays(1);
+                    businessDays++;
                 }
 
-                NumberOfBusinessDays.Set(context, businessDays);
+                dateToCheck = dateToCheck.AddDays(1);
             }
-            catch (Exception ex)
-            {
-                throw new InvalidPluginExecutionException(OperationStatus.Failed, $"{ex.Message}");
-            }
+
+            NumberOfBusinessDays.Set(context, businessDays);
         }
     }
 }
