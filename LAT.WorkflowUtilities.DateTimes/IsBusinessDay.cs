@@ -36,50 +36,25 @@ namespace LAT.WorkflowUtilities.DateTimes
             if (localContext == null)
                 throw new ArgumentNullException(nameof(localContext));
 
-            DateTime dateToCheck = DateToCheck.Get(context);
-            bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(context);
-
-            if (evaluateAsUserLocal)
+            try
             {
-                int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
-                dateToCheck = GetLocalTime.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
-            }
+                DateTime dateToCheck = DateToCheck.Get(context);
+                bool evaluateAsUserLocal = EvaluateAsUserLocal.Get(context);
 
-            EntityReference holidaySchedule = HolidayClosureCalendar.Get(context);
-
-            bool validBusinessDay = dateToCheck.DayOfWeek != DayOfWeek.Saturday || dateToCheck.DayOfWeek == DayOfWeek.Sunday;
-
-            if (!validBusinessDay)
-            {
-                ValidBusinessDay.Set(context, false);
-                return;
-            }
-
-            if (holidaySchedule != null)
-            {
-                Entity calendar = localContext.OrganizationService.Retrieve("calendar", holidaySchedule.Id, new ColumnSet(true));
-                if (calendar == null) return;
-
-                EntityCollection calendarRules = calendar.GetAttributeValue<EntityCollection>("calendarrules");
-                foreach (Entity calendarRule in calendarRules.Entities)
+                if (evaluateAsUserLocal)
                 {
-                    //Date is not stored as UTC
-                    DateTime startTime = calendarRule.GetAttributeValue<DateTime>("starttime");
-
-                    //Not same date
-                    if (!startTime.Date.Equals(dateToCheck.Date))
-                        continue;
-
-                    //Not full day event
-                    if (startTime.Subtract(startTime.TimeOfDay) != startTime || calendarRule.GetAttributeValue<int>("duration") != 1440)
-                        continue;
-
-                    ValidBusinessDay.Set(context, false);
-                    return;
+                    int? timeZoneCode = GetLocalTime.RetrieveTimeZoneCode(localContext.OrganizationService);
+                    dateToCheck = GetLocalTime.RetrieveLocalTimeFromUtcTime(dateToCheck, timeZoneCode, localContext.OrganizationService);
                 }
-            }
+            
+                var result = dateToCheck.IsBusinessDay(localContext.OrganizationService, this.HolidayClosureCalendar.Get(context));
 
-            ValidBusinessDay.Set(context, true);
+                this.ValidBusinessDay.Set(context, result);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidPluginExecutionException(OperationStatus.Failed, $"{ex.Message}");
+            }
         }
     }
 }
