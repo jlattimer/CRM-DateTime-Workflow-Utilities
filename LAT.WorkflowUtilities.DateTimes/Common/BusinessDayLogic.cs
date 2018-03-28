@@ -1,9 +1,9 @@
-﻿namespace LAT.WorkflowUtilities.DateTimes.Common
-{
-    using Microsoft.Xrm.Sdk;
-    using Microsoft.Xrm.Sdk.Query;
-    using System;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using System;
 
+namespace LAT.WorkflowUtilities.DateTimes.Common
+{
     /// <summary>
     /// Class containing common functionality relating to business days
     /// </summary>

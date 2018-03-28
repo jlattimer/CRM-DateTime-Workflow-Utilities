@@ -1,5 +1,5 @@
-﻿using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Query;
+﻿using LAT.WorkflowUtilities.DateTimes.Common;
+using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
@@ -60,7 +60,7 @@ namespace LAT.WorkflowUtilities.DateTimes
                 while (businessDaysToAdd < 0)
                 {
                     tempDate = tempDate.AddDays(-1);
-                    
+
                     if (tempDate.IsBusinessDay(localContext.OrganizationService, holidaySchedule))
                     {
                         // Only increase the days to add if the day we've just added counts as a business day

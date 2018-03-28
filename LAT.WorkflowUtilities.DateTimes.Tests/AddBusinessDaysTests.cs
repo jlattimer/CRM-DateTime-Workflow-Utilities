@@ -100,7 +100,7 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
         }
 
         [TestMethod]
-        public void AddMinusFiveWeekend()
+        public void AddBusinessDays_Add_Minus_Five_With_Weekend()
         {
             //Arrange
             XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
