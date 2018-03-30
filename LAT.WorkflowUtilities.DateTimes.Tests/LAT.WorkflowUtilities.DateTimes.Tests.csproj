@@ -88,11 +88,14 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AddWeeksTests.cs" />
+    <Compile Include="DateDiffBusinessDaysTests.cs" />
+    <Compile Include="DateDiffBusinessHoursTests.cs" />
     <Compile Include="DateDiffTests.cs" />
     <Compile Include="DateDiffSecondsTests.cs" />
     <Compile Include="DateDiffMinutesTests.cs" />
     <Compile Include="GetDayNumberOfWeekTests.cs" />
     <Compile Include="GetMonthNameTests.cs" />
+    <Compile Include="DateDiffBusinessMinutesTests.cs" />
     <Compile Include="GetNumberOfBusinessDaysTests.cs" />
     <Compile Include="GetSecondNumberTests.cs" />
     <Compile Include="GetMinuteNumberTests.cs" />

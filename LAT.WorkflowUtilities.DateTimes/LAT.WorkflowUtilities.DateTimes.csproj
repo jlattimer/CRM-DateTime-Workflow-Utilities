@@ -72,12 +72,16 @@
   <ItemGroup>
     <Compile Include="AddBusinessDays.cs" />
     <Compile Include="AddWeeks.cs" />
+    <Compile Include="Common\BusinessMinuteLogic.cs" />
     <Compile Include="Common\BusinessDayLogic.cs" />
     <Compile Include="Common\GetLocalTime.cs" />
     <Compile Include="DateDiff.cs" />
+    <Compile Include="DateDiffBusinessDays.cs" />
+    <Compile Include="DateDiffBusinessHours.cs" />
     <Compile Include="DateDiffSeconds.cs" />
     <Compile Include="DateDiffMinutes.cs" />
     <Compile Include="GetMonthName.cs" />
+    <Compile Include="DateDiffBusinessMinutes.cs" />
     <Compile Include="GetNumberOfBusinessDays.cs" />
     <Compile Include="GetSecondNumber.cs" />
     <Compile Include="GetMinuteNumber.cs" />
