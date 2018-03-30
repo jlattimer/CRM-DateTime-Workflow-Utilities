@@ -1,15 +1,15 @@
 ﻿using LAT.WorkflowUtilities.DateTimes.Common;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk.Workflow;
 using System;
 using System.Activities;
+
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable MemberCanBePrivate.Global
 
 namespace LAT.WorkflowUtilities.DateTimes
 {
-    using LAT.WorkflowUtilities.DateTimes.Common;
-
     public sealed class AddBusinessDays : WorkFlowActivityBase
     {
         public AddBusinessDays() : base(typeof(AddBusinessDays)) { }
@@ -40,6 +40,10 @@ namespace LAT.WorkflowUtilities.DateTimes
             int businessDaysToAdd = BusinessDaysToAdd.Get(context);
             EntityReference holidaySchedule = HolidayClosureCalendar.Get(context);
 
+            Entity calendar = null;
+            if (holidaySchedule != null)
+                calendar = localContext.OrganizationService.Retrieve("calendar", holidaySchedule.Id, new ColumnSet(true));
+
             DateTime tempDate = originalDate;
 
             if (businessDaysToAdd > 0)
@@ -48,7 +52,7 @@ namespace LAT.WorkflowUtilities.DateTimes
                 {
                     tempDate = tempDate.AddDays(1);
 
-                    if (tempDate.IsBusinessDay(localContext.OrganizationService, holidaySchedule))
+                    if (tempDate.IsBusinessDay(calendar))
                     {
                         // Only decrease the days to add if the day we've just added counts as a business day
                         businessDaysToAdd--;
@@ -61,7 +65,7 @@ namespace LAT.WorkflowUtilities.DateTimes
                 {
                     tempDate = tempDate.AddDays(-1);
 
-                    if (tempDate.IsBusinessDay(localContext.OrganizationService, holidaySchedule))
+                    if (tempDate.IsBusinessDay(calendar))
                     {
                         // Only increase the days to add if the day we've just added counts as a business day
                         businessDaysToAdd++;

@@ -1,8 +1,9 @@
-﻿using System;
-using System.Activities;
-using LAT.WorkflowUtilities.DateTimes.Common;
+﻿using LAT.WorkflowUtilities.DateTimes.Common;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk.Workflow;
+using System;
+using System.Activities;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -39,10 +40,15 @@ namespace LAT.WorkflowUtilities.DateTimes
             var endDate = EndDate.Get(context);
             endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, 0, 0, 0);
 
+            Entity calendar = null;
+            EntityReference holidayClosureCalendar = HolidayClosureCalendar.Get(context);
+            if (holidayClosureCalendar != null)
+                calendar = localContext.OrganizationService.Retrieve("calendar", holidayClosureCalendar.Id, new ColumnSet(true));
+
             var businessDays = 0;
             while (dateToCheck <= endDate)
             {
-                if (dateToCheck.IsBusinessDay(localContext.OrganizationService, HolidayClosureCalendar.Get(context)))
+                if (dateToCheck.IsBusinessDay(calendar))
                 {
                     businessDays++;
                 }

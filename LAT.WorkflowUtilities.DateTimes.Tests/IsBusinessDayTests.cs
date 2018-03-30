@@ -236,7 +236,7 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
             var inputs = new Dictionary<string, object>
             {
                 { "DateToCheck", new DateTime(2014, 7, 5, 2, 48, 0, 0)},
-                { "HolidayClosureCalendar", new EntityReference{LogicalName = "calendar", Id = new Guid("b01748c5-d0ba-e311-9ec9-6c3be5a8a0c8")}},
+                { "HolidayClosureCalendar", holidayCalendar.ToEntityReference() },
                 { "EvaluateAsUserLocal", false }
             };
 
