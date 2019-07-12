@@ -255,5 +255,24 @@ namespace LAT.WorkflowUtilities.DateTimes.Tests
             //Assert
             Assert.AreEqual(expected, result["DaysDifference"]);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DateDiffDays_Null_Date()
+        {
+            //Arrange
+            XrmFakedWorkflowContext workflowContext = new XrmFakedWorkflowContext();
+
+            var inputs = new Dictionary<string, object>
+            {
+                { "StartingDate", new DateTime(2014, 7, 3, 8, 48, 0, 0)},
+                { "EndingDate", null}
+            };
+
+            XrmFakedContext xrmFakedContext = new XrmFakedContext();
+
+            //Act
+            xrmFakedContext.ExecuteCodeActivity<DateDiffDays>(workflowContext, inputs);
+        }
     }
 }
