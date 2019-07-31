@@ -87,6 +87,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="RoundToHourTests.cs" />
+    <Compile Include="RoundToHalfHourTests.cs" />
+    <Compile Include="RoundToQuarterHourTests.cs" />
     <Compile Include="AddWeeksTests.cs" />
     <Compile Include="DateDiffBusinessDaysTests.cs" />
     <Compile Include="DateDiffBusinessHoursTests.cs" />
